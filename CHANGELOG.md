@@ -1,6 +1,22 @@
 # Changelog
 
 All notable changes to this project are documented in this file.
+## [0.4.1] - 2026-04-16
+### Fixed
+- Hardened the Atlas viewer against inline-script breakage when indexed markdown contains literal `</script>` content.
+- Normalized embedded Atlas asset URLs so quoted remote image links no longer resolve as broken `%22https://...%22` requests.
+- Added an inline Atlas viewer favicon to remove the remaining local viewer `favicon.ico` 404 noise after Atlas build/open flows.
+
+## [0.4.0] - 2026-04-15
+### Added
+- Introduced the free SDTK Atlas workflow in `sdtk-spec-kit` with local graph build, browser viewer launch, rebuild watch mode, and status inspection commands.
+- Added entitlement-gated Atlas Ask and project intelligence command surfaces to the public SDTK-SPEC CLI line for Pro-capable environments.
+### Changed
+- Bundled the Atlas runtime assets directly into the distributed `sdtk-spec-kit` payload so Atlas behavior no longer depends on maintainer-repo-only tooling.
+- Refined the Atlas viewer shell, rendering behavior, and Mermaid-backed note rendering support as part of the shipped package line.
+### Fixed
+- Aligned packaged Atlas runtime behavior with current source truth so public releases can receive the current viewer/runtime fixes instead of the pre-Atlas baseline.
+
 ## [0.3.16] - 2026-04-09
 ### Added
 - Shipped controller-enforced bounded execution envelopes for mailbox implementation runs so Codex and Claude dry-runs start from authoritative `Inputs:` instead of broad repo-wide discovery.

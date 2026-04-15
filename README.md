@@ -42,7 +42,7 @@ Current repo truth after the two lean product-value waves:
   - Goal 2 (`human-in-the-loop across SPEC -> CODE -> OPS`): `92 / 100`
 
 Important distinction:
-- latest published public SPEC package is `sdtk-spec-kit@0.3.18` as of 2026-04-14
+- latest published public SPEC package is `sdtk-spec-kit@0.4.1` as of 2026-04-16
 - repo/source proof can move ahead of the latest public package line
 
 ## Check Latest Published Versions
