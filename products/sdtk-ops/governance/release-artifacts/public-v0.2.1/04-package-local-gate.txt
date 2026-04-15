@@ -1,0 +1,109 @@
+$ npm.cmd run build:payload
+
+> sdtk-ops-kit@0.2.1 build:payload
+> powershell -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; & 'scripts/sync-toolkit-assets.ps1'; & 'scripts/build-toolkit-manifest.ps1'"
+
+=== SDTK-OPS CLI Payload Sync ===
+Product root: D:\DucTN\Source\Sdkit\products\sdtk-ops
+Assets root : D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\toolkit
+Policy      : internal-only runtime payload; no repo-relative reads
+
+Cleaned previous assets directory.
+
+[OK] Copied 36 files to assets/toolkit/.
+[OK] Generated 0 compatibility runtime stubs under assets/toolkit/toolkit/scripts/.
+=== SDTK-OPS CLI Payload Manifest Builder ===
+Assets root : D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\toolkit
+Manifest dir: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\manifest
+
+[OK] Manifest: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\manifest\toolkit-bundle.manifest.json (36 files)
+[OK] Hash file: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\manifest\toolkit-bundle.sha256.txt
+[exit=0]
+
+$ npm.cmd run verify:payload
+
+> sdtk-ops-kit@0.2.1 verify:payload
+> node -e "require('./src/lib/toolkit-payload').verify()"
+
+[exit=0]
+
+$ npm.cmd test
+
+> sdtk-ops-kit@0.2.1 test
+> powershell -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; Set-Location '..\..\..\..'; python -m unittest -v tests.test_sdtk_ops_cli"
+
+test_build_payload_is_deterministic (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_build_payload_is_deterministic) ... ok
+test_docs_routing_surface_is_coherent (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_docs_routing_surface_is_coherent) ... ok
+test_help_and_version_surface (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_help_and_version_surface) ... ok
+test_init_skip_runtime_assets_for_claude_and_codex (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_init_skip_runtime_assets_for_claude_and_codex) ... ok
+test_package_inventory_and_entrypoints (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_package_inventory_and_entrypoints) ... ok
+test_packed_tarball_supports_bounded_public_smoke (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_packed_tarball_supports_bounded_public_smoke) ... ok
+test_runtime_claude_project_install_status_uninstall (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_runtime_claude_project_install_status_uninstall) ... ok
+test_runtime_claude_user_install_and_uninstall (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_runtime_claude_user_install_and_uninstall) ... ok
+test_runtime_codex_user_install_status_uninstall_and_gate_c0 (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_runtime_codex_user_install_status_uninstall_and_gate_c0) ... ok
+test_verify_payload_failure_modes_in_temp_copy (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_verify_payload_failure_modes_in_temp_copy) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 28.961s
+
+OK
+[exit=0]
+
+$ npm.cmd run pack:smoke
+
+> sdtk-ops-kit@0.2.1 pack:smoke
+> powershell -ExecutionPolicy Bypass -File scripts/pack-smoke.ps1
+
+=== SDTK-OPS Pack Smoke ===
+CLI root: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit
+
+
+=== Gate 1 - Payload Refresh And Verification ===
+=== SDTK-OPS CLI Payload Sync ===
+Product root: D:\DucTN\Source\Sdkit\products\sdtk-ops
+Assets root : D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\toolkit
+Policy      : internal-only runtime payload; no repo-relative reads
+
+Cleaned previous assets directory.
+
+[OK] Copied 36 files to assets/toolkit/.
+[OK] Generated 0 compatibility runtime stubs under assets/toolkit/toolkit/scripts/.
+=== SDTK-OPS CLI Payload Manifest Builder ===
+Assets root : D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\toolkit
+Manifest dir: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\manifest
+
+[OK] Manifest: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\manifest\toolkit-bundle.manifest.json (36 files)
+[OK] Hash file: D:\DucTN\Source\Sdkit\products\sdtk-ops\distribution\sdtk-ops-kit\assets\manifest\toolkit-bundle.sha256.txt
+[OK] Payload refresh and payload verify
+
+=== Gate 2 - Versioned Tarball Creation And Install ===
+  Temp root: C:\Users\nerot\AppData\Local\Temp\sdtk-ops-pack-smoke-9b3bbf45fea8460783b92350e51c553f
+  Tarball: C:\Users\nerot\AppData\Local\Temp\sdtk-ops-pack-smoke-9b3bbf45fea8460783b92350e51c553f\sdtk-ops-kit-0.2.1.tgz
+  Prefix: C:\Users\nerot\AppData\Local\Temp\sdtk-ops-pack-smoke-9b3bbf45fea8460783b92350e51c553f\prefix
+[OK] Versioned tarball created and installed into temporary prefix
+
+=== Gate 3 - Installed Help Surface ===
+[OK] Installed help surface is truthful
+
+=== Gate 4 - Claude Project Init ===
+  Claude project path: C:\Users\nerot\AppData\Local\Temp\sdtk-ops-pack-smoke-9b3bbf45fea8460783b92350e51c553f\claude-project
+[OK] Claude project init copied the three shared files
+
+=== Gate 5 - Claude Project Runtime Install Status Uninstall ===
+[OK] Claude project runtime install, status, and uninstall passed
+
+=== Gate 6 - Codex User Init ===
+  Codex project path: C:\Users\nerot\AppData\Local\Temp\sdtk-ops-pack-smoke-9b3bbf45fea8460783b92350e51c553f\codex-project
+  CODEX_HOME: C:\Users\nerot\AppData\Local\Temp\sdtk-ops-pack-smoke-9b3bbf45fea8460783b92350e51c553f\.codex-home
+[OK] Codex init copied the three shared files
+
+=== Gate 7 - Codex User Runtime Install Status Uninstall ===
+[OK] Codex user runtime install, status, and uninstall passed
+
+=== Gate 8 - Codex Gate C0 Rejection ===
+[OK] Codex project-scope rejection remained truthful
+
+=== SDTK-OPS Pack Smoke Summary ===
+[OK] Installed-binary tarball smoke passed
+[exit=0]
+

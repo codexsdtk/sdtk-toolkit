@@ -1,0 +1,26 @@
+{
+  "code": "SDTKCODE",
+  "name": "Software Development Toolkit - Code",
+  "slug": "sdtk-code",
+  "tagline": "Coding process discipline: TDD, debugging, verification, review, and shipping.",
+  "domain_summary": "Toolkit for disciplined software implementation -- test-driven development, systematic debugging, evidence-based verification, structured code review, and release automation.",
+  "visibility": "public",
+  "runtime_support": {
+    "claude": {
+      "project": true,
+      "user": true,
+      "default_scope": "project"
+    },
+    "codex": {
+      "project": true,
+      "user": true,
+      "default_scope": "user"
+    }
+  },
+  "package_name": "sdtk-code-kit",
+  "brand": "AgentToolkits",
+  "status": "first_public_release",
+  "reference_model": "sdtk-toolkit-product-engineering",
+  "version": "0.1.3",
+  "skill_count": 12
+}

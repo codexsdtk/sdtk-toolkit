@@ -1,0 +1,46 @@
+{
+  "name": "sdtk-ops-kit",
+  "version": "0.2.4",
+  "description": "Skill-driven operations toolkit for deployment, verification, monitoring, incident response, backup, security, compliance, and cost discipline.",
+  "bin": {
+    "sdtk-ops": "bin/sdtk-ops.js"
+  },
+  "main": "src/index.js",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codexsdtk/sdtk-toolkit.git",
+    "directory": "products/sdtk-ops/distribution/sdtk-ops-kit"
+  },
+  "homepage": "https://github.com/codexsdtk/sdtk-toolkit/tree/main/products/sdtk-ops/distribution/sdtk-ops-kit",
+  "bugs": {
+    "url": "https://github.com/codexsdtk/sdtk-toolkit/issues"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "assets/"
+  ],
+  "scripts": {
+    "test": "powershell -ExecutionPolicy Bypass -Command \"$ErrorActionPreference = 'Stop'; Set-Location '..\\..\\..\\..'; python -m unittest -v tests.test_sdtk_ops_cli\"",
+    "build:payload": "powershell -ExecutionPolicy Bypass -Command \"$ErrorActionPreference = 'Stop'; & 'scripts/sync-toolkit-assets.ps1'; & 'scripts/build-toolkit-manifest.ps1'\"",
+    "verify:payload": "node -e \"require('./src/lib/toolkit-payload').verify()\"",
+    "pack:smoke": "powershell -ExecutionPolicy Bypass -File scripts/pack-smoke.ps1",
+    "prepublishOnly": "npm run build:payload && npm run verify:payload"
+  },
+  "engines": {
+    "node": ">=18.13.0"
+  },
+  "keywords": [
+    "sdtk-ops",
+    "cli",
+    "toolkit",
+    "operations",
+    "claude",
+    "codex"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

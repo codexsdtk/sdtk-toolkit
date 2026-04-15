@@ -1,0 +1,12 @@
+{
+  "$comment": "SCAFFOLD: Example profiles config for SDTKCODE. Copy to sdtk-spec.config.profiles.json and customize.",
+  "profiles": {
+    "default": {
+      "stack": {
+        "backend": "UPDATE_ME",
+        "frontend": "UPDATE_ME",
+        "database": "UPDATE_ME"
+      }
+    }
+  }
+}

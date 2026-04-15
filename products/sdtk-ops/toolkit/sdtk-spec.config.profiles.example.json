@@ -1,0 +1,12 @@
+{
+  "$comment": "Example profiles config for SDTK-OPS. Copy to sdtk-spec.config.profiles.json and customize for your runtime targets.",
+  "profiles": {
+    "default": {
+      "stack": {
+        "backend": "UPDATE_ME",
+        "frontend": "UPDATE_ME",
+        "database": "UPDATE_ME"
+      }
+    }
+  }
+}

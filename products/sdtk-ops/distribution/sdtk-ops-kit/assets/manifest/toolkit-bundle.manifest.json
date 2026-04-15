@@ -1,0 +1,187 @@
+{
+    "version":  "0.2.4",
+    "sourceCommit":  "fdd187d89b2749677696e024600d94270a2fd8e2",
+    "fileCount":  36,
+    "files":  [
+                  {
+                      "path":  "toolkit/AGENTS.md",
+                      "sha256":  "a1a8d03564680cde44ef34e1878f3c8fb6ad7ce79e79b7ba7274fdb072321f30",
+                      "size":  5925
+                  },
+                  {
+                      "path":  "toolkit/install.ps1",
+                      "sha256":  "e0a0550001385ca68854d2c33d404f0702832d34f8ae29823f0012c39bdba7ce",
+                      "size":  4386
+                  },
+                  {
+                      "path":  "toolkit/scripts/install-claude-skills.ps1",
+                      "sha256":  "5eae77f4d14b81d56c3c109f563fefafd1967d85093ff1b192293fe438aeabe5",
+                      "size":  2474
+                  },
+                  {
+                      "path":  "toolkit/scripts/install-codex-skills.ps1",
+                      "sha256":  "68eb662bc9b8906882d32f6cd1247238f6ae663137a489f18054a75724cd1e81",
+                      "size":  4761
+                  },
+                  {
+                      "path":  "toolkit/scripts/uninstall-claude-skills.ps1",
+                      "sha256":  "2c629d8316b205c6a7cd0d95959b80801b281ef62e205c10a92e3a2568eb8b41",
+                      "size":  1901
+                  },
+                  {
+                      "path":  "toolkit/scripts/uninstall-codex-skills.ps1",
+                      "sha256":  "fdb9631a80ecfb0d986a52a2833e88bf15c5303ab654d35bad6d64cca43046e8",
+                      "size":  2428
+                  },
+                  {
+                      "path":  "toolkit/SDTKOPS_TOOLKIT.md",
+                      "sha256":  "bed302b782f0c1729c8010877207a67bbc4c3032209186a54bac280d468cf5c8",
+                      "size":  8171
+                  },
+                  {
+                      "path":  "toolkit/sdtk-spec.config.json",
+                      "sha256":  "8247ddf24502ce285bee213eefc801ce6b0b83afe00efd828468ac9130f53b09",
+                      "size":  111
+                  },
+                  {
+                      "path":  "toolkit/sdtk-spec.config.profiles.example.json",
+                      "sha256":  "de0310b0c69f77d1c1601b94b0ea72b2c83c92cb8ee94d2f4a1759ceb58f2fd4",
+                      "size":  315
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-backup/references/backup-script-patterns.md",
+                      "sha256":  "1cd81e12cebdb2be528803e2d8afe43959aab1493e55499af529b99ec566a56c",
+                      "size":  3071
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-backup/SKILL.md",
+                      "sha256":  "76e8385190d967bf98b3cafbbf8925d9b9c656ee7a7ed66ff51285b6459ebff1",
+                      "size":  3537
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-ci-cd/references/pipeline-examples.md",
+                      "sha256":  "d27e47b0c832656c2835e3d3e32dae7c86419014199439b10fc6823956324716",
+                      "size":  2257
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-ci-cd/SKILL.md",
+                      "sha256":  "c9bf8e6f602d6201ccd54a78a9a7f850028924b460d60495d144bd5ec473c5e6",
+                      "size":  2657
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-compliance/SKILL.md",
+                      "sha256":  "a0bb24484cba68a7201e6b7f614c8b5ada8b2dff540a4e4390661a0ced112e8d",
+                      "size":  3963
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-container/references/k8s-manifest-patterns.md",
+                      "sha256":  "070ebcad0d0cb71cd3815de6e4c78d22517a28f825d65ea3677215e57112d1df",
+                      "size":  2237
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-container/SKILL.md",
+                      "sha256":  "7eb1113162af029886974d2dba6553fec6ba9b002adc31a18c427a5e471d48a3",
+                      "size":  3541
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-cost/SKILL.md",
+                      "sha256":  "3000b78ad911d667b056efdc01c639d8e069c1df1b157c6a6721ba2c61cce678",
+                      "size":  3356
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-debug/references/root-cause-tracing.md",
+                      "sha256":  "d70b59d276edf5c6c8aebb5fc669b8f6d04673fc8e8561cbaf4d7e5fb9f4e2f2",
+                      "size":  3875
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-debug/SKILL.md",
+                      "sha256":  "d5f58322afebcf5c3a110b02de0d2eec4494f9ed9d358b113b6717275c3524af",
+                      "size":  11066
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-deploy/SKILL.md",
+                      "sha256":  "c2cacc94ffba4d7ef84e635c2078e08abb8d52f79afbbb1534661c0e0cf9bda6",
+                      "size":  4068
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-discover/SKILL.md",
+                      "sha256":  "6f38c9b2ab972f272fb86e17926585a9a254a1c48c8454459a61315d4bd81d81",
+                      "size":  5617
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-incident/references/communication-templates.md",
+                      "sha256":  "f6102d127e47861068b285ebbbb2045e4c3dc8cd9af73b3c975f285f2141639e",
+                      "size":  1000
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-incident/references/postmortem-template.md",
+                      "sha256":  "fda6d9cadc5a3757e5559798a67716a6356809735b076d47d6bd99a993b71b99",
+                      "size":  2008
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-incident/references/runbook-template.md",
+                      "sha256":  "358644dcd477fe32d3368ced5c9da30663ae3d54fdd5e825ae3e56327f7f6f2d",
+                      "size":  1570
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-incident/SKILL.md",
+                      "sha256":  "df03ad86862020941e69b90ea1f2ccf8cd69762e53f0a539936c16fb433e61c8",
+                      "size":  4128
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-infra-plan/references/iac-patterns.md",
+                      "sha256":  "14f02a1921cb58e2c54c355c0b24ffdf5a9bdb91a7be6921f22da5974787efee",
+                      "size":  3990
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-infra-plan/SKILL.md",
+                      "sha256":  "35eec623e41603dae0a1a328c1e6d822d2e1dc79a471f06bab3c1f3e2d552e53",
+                      "size":  4442
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-monitor/references/alert-rules.md",
+                      "sha256":  "28be1bd1babdaa3de9fc58f859060697c31b9249cc684c9c4272a9c3bc159db9",
+                      "size":  2505
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-monitor/references/slo-templates.md",
+                      "sha256":  "af28797b442fb94fa96dc0182881847e50b5fe9e68ecf7a71471502030f4bd27",
+                      "size":  2103
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-monitor/SKILL.md",
+                      "sha256":  "2d09968790ed63dd8e0969f59023c0ced71dd182d56475689a2d3bfc3f889002",
+                      "size":  4292
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-parallel/SKILL.md",
+                      "sha256":  "8c83a7f267b7222cf9765a4328dd6945e30f3629dfca21cd85f7439f501b8ee0",
+                      "size":  7277
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-plan/SKILL.md",
+                      "sha256":  "db75109542354b70a9502231f6c66803642c013958eedb93a26770f28b9e7fad",
+                      "size":  7170
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-security-infra/references/cicd-security-pipeline.md",
+                      "sha256":  "1a2d6c5ab225af2abc2591cc897808ebcce16bf0478ed55daea61000aa7652ee",
+                      "size":  1173
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-security-infra/references/security-headers.md",
+                      "sha256":  "796ebd48e399aedc59b0a1e9bbbe2363813d3b74be38721bec330cec683ecc69",
+                      "size":  955
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-security-infra/SKILL.md",
+                      "sha256":  "81d19ee0002c70788295a6a7e93ae8b0ff0e97af5e71c0a3591548e5bbd5bab6",
+                      "size":  4866
+                  },
+                  {
+                      "path":  "toolkit/skills/ops-verify/SKILL.md",
+                      "sha256":  "497bcb22ccb191dbb77d7db46cd96801b56cf9b1ec630c834d3a947b90a6169e",
+                      "size":  5983
+                  }
+              ]
+}

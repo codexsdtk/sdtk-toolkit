@@ -1,0 +1,20 @@
+﻿HEAD: 97ca3bf78f08840f29c6a3f0353c9d38793d31e5
+STATUS:
+ M governance/quality/SDTKOPS_NPM_AUTH_AND_PUBLISH_RUNBOOK.md
+ M products/sdtk-ops/agenttoolkits.product.json
+ M products/sdtk-ops/distribution/sdtk-ops-kit/README.md
+ M products/sdtk-ops/distribution/sdtk-ops-kit/assets/manifest/toolkit-bundle.manifest.json
+ M products/sdtk-ops/distribution/sdtk-ops-kit/package.json
+ M products/sdtk-ops/distribution/sdtk-ops-kit/src/commands/help.js
+ M products/sdtk-ops/governance/SDTKOPS_TOOLKIT_USAGE_GUIDE.md
+ M products/sdtk-ops/governance/installation-runbook.md
+ M products/sdtk-ops/governance/release-evidence.md
+ M products/sdtk-ops/governance/release-packaging.md
+ M products/sdtk-ops/governance/upgrade-notes.md
+ M products/sdtk-ops/governance/usage-guide.md
+ M tests/test_sdtk_ops_cli.py
+ M tests/test_sdtk_ops_product.py
+?? governance/ai/reviews/SDTK-OPS/SDTKOPS_PUBLIC_NPM_PUBLISH_IMPLEMENTATION_DETAIL_20260325.md
+?? governance/ai/reviews/SDTK-OPS/SDTKOPS_PUBLIC_NPM_PUBLISH_SPEC_20260325.md
+?? governance/ai/reviews/SDTK-OPS/SDTKOPS_PUBLIC_NPM_RELEASE_REPORT_20260325.md
+?? products/sdtk-ops/governance/release-artifacts/public-v0.2.0/

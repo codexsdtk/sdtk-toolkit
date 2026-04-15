@@ -1,0 +1,31 @@
+$ python -m unittest -v tests.test_sdtk_ops_cli
+test_build_payload_is_deterministic (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_build_payload_is_deterministic) ... ok
+test_docs_routing_surface_is_coherent (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_docs_routing_surface_is_coherent) ... ok
+test_help_and_version_surface (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_help_and_version_surface) ... ok
+test_init_skip_runtime_assets_for_claude_and_codex (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_init_skip_runtime_assets_for_claude_and_codex) ... ok
+test_package_inventory_and_entrypoints (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_package_inventory_and_entrypoints) ... ok
+test_packed_tarball_supports_bounded_public_smoke (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_packed_tarball_supports_bounded_public_smoke) ... ok
+test_runtime_claude_project_install_status_uninstall (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_runtime_claude_project_install_status_uninstall) ... ok
+test_runtime_claude_user_install_and_uninstall (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_runtime_claude_user_install_and_uninstall) ... ok
+test_runtime_codex_user_install_status_uninstall_and_gate_c0 (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_runtime_codex_user_install_status_uninstall_and_gate_c0) ... ok
+test_verify_payload_failure_modes_in_temp_copy (tests.test_sdtk_ops_cli.SDTKOpsCliTests.test_verify_payload_failure_modes_in_temp_copy) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 26.049s
+
+OK
+[exit=0]
+
+$ python -m unittest -v tests.test_sdtk_ops_product
+test_agenttoolkits_product_matches_first_public_contract (tests.test_sdtk_ops_product.SDTKOpsProductTests.test_agenttoolkits_product_matches_first_public_contract) ... ok
+test_governance_docs_hold_p1_public_prep_truth (tests.test_sdtk_ops_product.SDTKOpsProductTests.test_governance_docs_hold_p1_public_prep_truth) ... ok
+test_package_json_matches_first_public_contract (tests.test_sdtk_ops_product.SDTKOpsProductTests.test_package_json_matches_first_public_contract) ... ok
+test_package_readme_describes_public_contract_without_overclaiming_live_publish (tests.test_sdtk_ops_product.SDTKOpsProductTests.test_package_readme_describes_public_contract_without_overclaiming_live_publish) ... ok
+test_usage_stub_stays_short_redirect_for_public_wave (tests.test_sdtk_ops_product.SDTKOpsProductTests.test_usage_stub_stays_short_redirect_for_public_wave) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.002s
+
+OK
+[exit=0]
+

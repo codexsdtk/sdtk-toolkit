@@ -1,0 +1,147 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+
+# Node
+node_modules/
+.npm/
+.next/
+
+# Logs and temp
+*.log
+*.tmp
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+
+# Build and artifacts
+dist/
+build/
+out/
+*.tgz
+
+# Local env
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Toolkit smoke outputs (local)
+/tmp/
+/artifacts/
+
+
+# Local Codex runtime/skills
+.codex/
+
+# Local shell redirect artifact (Windows cmd)
+$null
+
+
+# Internal planning documents (not part of release payload)
+/product/
+/improve/
+
+# References
+/References/
+
+# Internal agent context files
+# CLAUDE.md
+# CODEX.md
+
+# Local Claude runtime state
+.claude/
+
+# Narrow docs ignore for BK-030 checkpoint review.
+# Keep canonical BK-030 docs reviewable in git while broader local-only docs suppression
+# remains handled outside the repo-level ignore contract.
+/docs/*
+!/docs/api/
+/docs/api/*
+!/docs/api/OrchestratorRuntimeParity_API.yaml
+!/docs/api/BK030_ORCHESTRATOR_RUNTIME_PARITY_ENDPOINTS.md
+!/docs/api/BK030_ORCHESTRATOR_RUNTIME_PARITY_API_DESIGN_DETAIL.md
+!/docs/api/bk030_orchestrator_runtime_parity_api_flow_list.txt
+!/docs/api/SDTKOnePromptAutonomy95Hardening_API.yaml
+!/docs/api/BK032_AUTONOMY_95_ENDPOINTS.md
+!/docs/api/BK032_AUTONOMY_95_API_DESIGN_DETAIL.md
+!/docs/api/bk032_autonomy_95_api_flow_list.txt
+!/docs/architecture/
+/docs/architecture/*
+!/docs/architecture/ARCH_DESIGN_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/architecture/ARCH_DESIGN_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/architecture/ARCH_DESIGN_BK032_AUTONOMY_95.md
+!/docs/database/
+/docs/database/*
+!/docs/database/DATABASE_SPEC_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/database/DATABASE_SPEC_BK032_AUTONOMY_95.md
+!/docs/design/
+/docs/design/*
+!/docs/design/DESIGN_LAYOUT_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/design/DESIGN_LAYOUT_BK032_AUTONOMY_95.md
+!/docs/dev/
+/docs/dev/*
+!/docs/dev/FEATURE_IMPL_PLAN_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/dev/CODE_HANDOFF_BK030_ORCHESTRATOR_RUNTIME_PARITY.json
+!/docs/dev/CODE_WORKFLOW_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/dev/REVIEW_PACKET_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/dev/FEATURE_IMPL_PLAN_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/dev/CODE_HANDOFF_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.json
+!/docs/dev/CODE_WORKFLOW_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/dev/REVIEW_PACKET_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/dev/OPS_HANDOFF_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.json
+!/docs/dev/FEATURE_IMPL_PLAN_BK032_AUTONOMY_95.md
+!/docs/dev/CODE_HANDOFF_BK032_AUTONOMY_95.json
+!/docs/dev/CODE_WORKFLOW_BK032_AUTONOMY_95.md
+!/docs/dev/REVIEW_PACKET_BK032_AUTONOMY_95.md
+!/docs/dev/OPS_HANDOFF_BK032_AUTONOMY_95.json
+!/docs/dev/evidence/
+!/docs/dev/evidence/BK030_ORCHESTRATOR_RUNTIME_PARITY/
+!/docs/dev/evidence/BK030_ORCHESTRATOR_RUNTIME_PARITY/**
+!/docs/dev/evidence/BK032_AUTONOMY_95/
+!/docs/dev/evidence/BK032_AUTONOMY_95/**
+!/docs/product/
+/docs/product/*
+!/docs/product/PROJECT_INITIATION_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/product/PRD_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/product/BACKLOG_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/product/PROJECT_INITIATION_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/product/PRD_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/product/BACKLOG_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/product/PROJECT_INITIATION_BK032_AUTONOMY_95.md
+!/docs/product/PRD_BK032_AUTONOMY_95.md
+!/docs/product/BACKLOG_BK032_AUTONOMY_95.md
+!/docs/qa/
+/docs/qa/*
+!/docs/qa/QA_RELEASE_REPORT_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/qa/CONTROLLER_ACCEPTANCE_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/qa/BK035_CLAUDE_ARCH_PAYLOAD_PARITY_TEST_CASE.md
+!/docs/qa/QA_RELEASE_REPORT_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/qa/CONTROLLER_ACCEPTANCE_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/qa/BK032_AUTONOMY_95_TEST_CASE.md
+!/docs/qa/QA_RELEASE_REPORT_BK032_AUTONOMY_95.md
+!/docs/qa/CONTROLLER_ACCEPTANCE_BK032_AUTONOMY_95.md
+!/docs/qa/CONTROLLER_RECONCILIATION_BK032_AUTONOMY_95.md
+!/docs/specs/
+/docs/specs/*
+!/docs/specs/BA_SPEC_BK030_ORCHESTRATOR_RUNTIME_PARITY.md
+!/docs/specs/BK030_ORCHESTRATOR_RUNTIME_PARITY_FLOW_ACTION_SPEC.md
+!/docs/specs/BA_SPEC_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
+!/docs/specs/BA_SPEC_BK032_AUTONOMY_95.md
+!/docs/specs/BK032_AUTONOMY_95_FLOW_ACTION_SPEC.md
+/docs/dev/evidence/*
+# Local Atlas Ask history
+governance/ai/knowledge/atlas/history/

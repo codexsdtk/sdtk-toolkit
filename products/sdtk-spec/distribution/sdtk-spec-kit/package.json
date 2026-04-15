@@ -1,0 +1,48 @@
+{
+    "name":  "sdtk-spec-kit",
+    "version":  "0.3.18",
+    "description":  "SDTK-SPEC CLI toolkit for deterministic software documentation workflows via the sdtk-spec command",
+    "bin":  {
+                "sdtk-spec":  "bin/sdtk.js"
+            },
+    "main":  "src/index.js",
+    "type":  "commonjs",
+    "files":  [
+                  "bin/",
+                  "src/",
+                  "assets/"
+              ],
+    "scripts":  {
+                    "test":  "npm run verify:payload \u0026\u0026 npm run pack:smoke",
+                    "build:payload":  "powershell -ExecutionPolicy Bypass -File scripts/sync-toolkit-assets.ps1 \u0026\u0026 powershell -ExecutionPolicy Bypass -File scripts/build-toolkit-manifest.ps1",
+                    "verify:payload":  "node -e \"require(\u0027./src/lib/toolkit-payload\u0027).verify()\"",
+                    "pack:smoke":  "npm pack --dry-run",
+                    "pack:release":  "npm pack",
+                    "prepublishOnly":  "node -e \"require(\u0027./src/lib/toolkit-payload\u0027).verify()\""
+                },
+    "engines":  {
+                    "node":  "\u003e=18.13.0"
+                },
+    "keywords":  [
+                     "sdtk",
+                     "sdtk-spec",
+                     "sdtk-spec-kit",
+                     "cli",
+                     "documentation",
+                     "toolkit",
+                     "dockkit"
+                 ],
+    "license":  "MIT",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/codexsdtk/sdtk-toolkit.git",
+                       "directory":  "products/sdtk-spec/distribution/sdtk-spec-kit"
+                   },
+    "homepage":  "https://sdtk.dev",
+    "bugs":  {
+                 "url":  "https://github.com/codexsdtk/sdtk-toolkit/issues"
+             },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
+}
