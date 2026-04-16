@@ -1,12 +1,12 @@
 {
-    "version":  "0.4.2",
+    "version":  "0.4.3",
     "sourceCommit":  "unknown",
-    "fileCount":  96,
+    "fileCount":  97,
     "files":  [
                   {
                       "path":  "toolkit/AGENTS.md",
-                      "sha256":  "2d9f89d03c84c4546e6430df2c26e5f53824bd4dd3b3793c215869d79e59ba67",
-                      "size":  9255
+                      "sha256":  "b748533448e8db86b0c2fd79c0c05e53934fc936d1a1697af1f08db8f1163635",
+                      "size":  13655
                   },
                   {
                       "path":  "toolkit/install.ps1",
@@ -20,13 +20,13 @@
                   },
                   {
                       "path":  "toolkit/runtimes/claude/CLAUDE_TEMPLATE.md",
-                      "sha256":  "dbcc620e3f58e84279f44bdd7831926ce46cfb2cba20d5617e97f87f8e0b1ba6",
-                      "size":  3033
+                      "sha256":  "cb32798da778859a1e9a239c9408dc7efb9e268b4919831b1e1e1c1e7d940eb8",
+                      "size":  4555
                   },
                   {
                       "path":  "toolkit/runtimes/codex/CODEX_TEMPLATE.md",
-                      "sha256":  "def01a26ebc965897d9b3c9679a1b06cd1418fae637f127160254c3d8c121d65",
-                      "size":  1873
+                      "sha256":  "7238a28c87206ae96469c7eeaf74759c557b2d09927e2443ca1a7dee0f47dc03",
+                      "size":  3346
                   },
                   {
                       "path":  "toolkit/scripts/agents/run-claude-task.ps1",
@@ -75,8 +75,8 @@
                   },
                   {
                       "path":  "toolkit/SDTK_TOOLKIT.md",
-                      "sha256":  "e6f3d937ce81795a41d80c7ed3864c7a315346569e2d4a36f2d6aeb4e1cf4244",
-                      "size":  9310
+                      "sha256":  "0877cfaa8e83e48b553e319f9d452c5c484ab9784e4d7aaf9308c0cbcffc47b5",
+                      "size":  9385
                   },
                   {
                       "path":  "toolkit/sdtk-spec.config.json",
@@ -90,13 +90,13 @@
                   },
                   {
                       "path":  "toolkit/session/SDTK_ACTIVE_BOOTSTRAP.md",
-                      "sha256":  "5a052c758a4f1a4565194b25914716541ce35513bea986bd1a6b6e2c2b84ebba",
-                      "size":  957
+                      "sha256":  "d1e808e45017fc22efcc4082ffc379c4171a88862bdd69e0c2a768dc4eed0fc4",
+                      "size":  2456
                   },
                   {
                       "path":  "toolkit/session/SDTK_AGENT_WORKING_RULES.md",
-                      "sha256":  "93feff9eca69466f4707432a119ead134d72a84f0de8dbfd2820cfa744516e4d",
-                      "size":  867
+                      "sha256":  "49dcb033d4bd59e812ee018a4d6a7d9ddb5b99c4ba8a4c955116e5919a2bd8ad",
+                      "size":  2062
                   },
                   {
                       "path":  "toolkit/skills/sdtk-api-design-spec/scripts/generate_api_design_detail.py",
@@ -170,8 +170,8 @@
                   },
                   {
                       "path":  "toolkit/skills/sdtk-orchestrator/SKILL.md",
-                      "sha256":  "76a43fd2a9b27cafa91a73c7f294106ad13d12938a413de92a4273b95b8790f1",
-                      "size":  8005
+                      "sha256":  "674ebb6be6adbbe08e0868a052c0965c3b06a4bd663e90cf9664062da695b96a",
+                      "size":  8314
                   },
                   {
                       "path":  "toolkit/skills/sdtk-pm/SKILL.md",
@@ -362,6 +362,11 @@
                       "path":  "toolkit/templates/docs/dev/OPS_HANDOFF_CREATION_RULES.md",
                       "sha256":  "de563da0bc41996540b56a63b6295be5f4810c049f132c472a2a7ee816cd2884",
                       "size":  16986
+                  },
+                  {
+                      "path":  "toolkit/templates/docs/discovery/REQUIREMENT_TEMPLATE.md",
+                      "sha256":  "e383c3364bff63a7c3bd0f72a470341238c7da29027df5afd12120c2207d3052",
+                      "size":  3449
                   },
                   {
                       "path":  "toolkit/templates/docs/product/BACKLOG_TEMPLATE.md",

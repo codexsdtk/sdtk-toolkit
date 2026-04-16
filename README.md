@@ -1,4 +1,4 @@
-# SDTK Suite
+﻿# SDTK Suite
 
 <p align="center">
   <a href="https://www.npmjs.com/package/sdtk-spec-kit"><img src="https://img.shields.io/npm/v/sdtk-spec-kit?style=for-the-badge&logo=npm&label=npm" alt="npm version"></a>
@@ -42,7 +42,7 @@ Current repo truth after the two lean product-value waves:
   - Goal 2 (`human-in-the-loop across SPEC -> CODE -> OPS`): `92 / 100`
 
 Important distinction:
-- latest published public SPEC package is `sdtk-spec-kit@0.4.2` as of 2026-04-16
+- latest published public SPEC package is `sdtk-spec-kit@0.4.3` as of 2026-04-16
 - repo/source proof can move ahead of the latest public package line
 
 ## Check Latest Published Versions
@@ -184,14 +184,10 @@ The current CLI generates a 17-file feature scaffold and installs the runtime gu
 
 The current source line also includes:
 - a free local Atlas document-graph workflow via `sdtk-spec atlas init|build|open|watch|status`
-- premium Atlas Ask via `sdtk-spec atlas ask`
-- premium project intelligence via `sdtk-spec project ingest|audit|refresh`
 
 Important truth:
 - free Atlas does not require auth or entitlement
-- premium Atlas/project commands require auth + entitlement sync + premium pack availability
 - premium project commands write staged artifacts under `<project>/.sdtk/project/` and do not mutate live `/docs/`
-- the current public `sdtk-spec-kit` line includes the free Atlas baseline plus premium `atlas ask` and `project ingest|audit|refresh`
 
 ## Installation
 
@@ -236,11 +232,6 @@ What this creates in the target project:
 sdtk-spec atlas init --project-path .
 
 # Premium follow-on workflow
-sdtk-spec entitlement sync
-sdtk-spec atlas ask --project-path . --prompt "Summarize the current architecture"
-sdtk-spec project ingest --project-path .
-sdtk-spec project audit --project-path . --json
-sdtk-spec project refresh --project-path .
 ```
 
 Runtime assets:
@@ -392,6 +383,7 @@ Current published package:
 - latest version lookup: `npm view sdtk-spec-kit version`
 
 Recent shipped improvements include:
+- v0.4.3 ships the Orchestrator-first runtime guidance validation lane, packaged discovery requirement template, and SPEC-kit parity checks for generated Claude/Codex runtime outputs
 - v0.3.9 hardens Claude-driven ARCH doc generation, including bundled skill assets, API-flow matching, file-relative screen-image references, new-style screen-flow PlantUML, and wireframe-marker mapping
 - v0.3.8 adds core hardening assets, runtime readiness audit, example packs, and the initial SDTK-CODE toolkit product
 - core hardening additions: skill catalog, critical constraints in every core skill, handoff templates, exact-spec quoting in QA/test-case workflows, public example packs, and runtime readiness auditing

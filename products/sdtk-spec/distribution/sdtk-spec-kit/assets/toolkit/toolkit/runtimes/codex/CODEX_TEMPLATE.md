@@ -1,4 +1,4 @@
-# CODEX.md
+﻿# CODEX.md
 
 Version: 1.1
 Last Updated: 2026-04-16
@@ -18,7 +18,9 @@ This file defines runtime guidance for Codex sessions in projects using the SDTK
   - `SDTK-SPEC`: orchestration, specs, planning, architecture, QA artifacts
   - `SDTK-CODE`: implementation, bug fixing, refactoring, verification, ship flow
   - `SDTK-OPS`: deploy, infra, CI/CD, monitoring, incident, ops verification
-- `SDTK-SPEC` phase workflow remains: PM -> BA -> ARCH -> DEV -> QA
+- Default unprefixed entry point: Orchestrator Intake.
+- Orchestrator classifies the user request before selecting a role, product lane, or skill.
+- `SDTK-SPEC` phase workflow remains: PM -> BA -> ARCH -> DEV -> QA after intake decides formal feature delivery is ready.
 - Role tags: `/pm`, `/ba`, `/arch`, `/dev`, `/qa`
 - Shared state files:
   - `SHARED_PLANNING.md`
@@ -32,19 +34,32 @@ Read these in order when they exist:
 4. issue-specific controller spec and implementation plan
 
 Routing rules:
-- requirements/spec/planning/architecture/test artifacts -> `SDTK-SPEC`
-- build feature or fix code -> `SDTK-CODE` when available
+- Raw idea -> brainstorm / requirement clarification, then create or update `docs/discovery/REQUIREMENT_[FEATURE_KEY].md` before PM initiation
+- Formal feature delivery and approved planning work -> `SDTK-SPEC`
+- build feature, fix code, refactor, or debug failure -> `SDTK-CODE` when available
 - deploy/release/infra/ops -> `SDTK-OPS` when available
+- "what should we do next" -> Orchestrator state review using the smallest sufficient workflow
+
+Proceed-vs-ask summary:
+- Ask clarification when the outcome is ambiguous, the target path/repo is missing, there is no acceptance boundary for implementation, or the next step could mutate external state.
+- Proceed when intent and target are clear, the task is read-only analysis, the plan/spec is already approved, or the change is bounded and verifiable.
 
 If only SPEC runtime assets are installed:
 - keep `/dev` bounded to planning and `CODE_HANDOFF`
 - do not claim that SDTK-CODE or SDTK-OPS runtime assets are already installed
 
+Discovery artifact rule:
+- PM initiation starts only after `docs/discovery/REQUIREMENT_[FEATURE_KEY].md` is marked `READY_FOR_PM_INITIATION`.
+- Use `NEEDS_MORE_DISCOVERY` or `NOT_ACTIONABLE_YET` when the request is not ready.
+- The discovery artifact is a pre-PM clarification bridge, not a PRD or BA replacement.
+
 ## 3) Minimal Session Flow
-1. Start with `/pm` to define feature scope.
-2. Move phase-by-phase without skipping gates.
-3. Keep traceability from requirements to design, implementation, and tests.
-4. Require code review completion before QA release decision.
+1. Start with Orchestrator Intake unless the user explicitly selects a role.
+2. Classify intent and choose the smallest sufficient SDTK workflow.
+3. For raw ideas, finish discovery and readiness in `docs/discovery/REQUIREMENT_[FEATURE_KEY].md` before PM initiation.
+4. For formal feature delivery, move PM -> BA -> ARCH -> DEV -> QA without skipping gates.
+5. Keep traceability from requirements to design, implementation, and tests.
+6. Require code review completion before QA release decision.
 
 ## 4) References
 - `toolkit/SDTK_TOOLKIT.md`

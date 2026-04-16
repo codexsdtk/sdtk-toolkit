@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project are documented in this file.
 ## [0.4.2] - 2026-04-16
@@ -19,7 +19,6 @@ All notable changes to this project are documented in this file.
 ## [0.4.0] - 2026-04-15
 ### Added
 - Introduced the free SDTK Atlas workflow in `sdtk-spec-kit` with local graph build, browser viewer launch, rebuild watch mode, and status inspection commands.
-- Added entitlement-gated Atlas Ask and project intelligence command surfaces to the public SDTK-SPEC CLI line for Pro-capable environments.
 ### Changed
 - Bundled the Atlas runtime assets directly into the distributed `sdtk-spec-kit` payload so Atlas behavior no longer depends on maintainer-repo-only tooling.
 - Refined the Atlas viewer shell, rendering behavior, and Mermaid-backed note rendering support as part of the shipped package line.

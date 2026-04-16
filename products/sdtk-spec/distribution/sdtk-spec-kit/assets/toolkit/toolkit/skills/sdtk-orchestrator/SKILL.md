@@ -18,12 +18,15 @@ description: "Orchestrate a full 6-phase SDLC multi-agent workflow (PM/BA/ARCH/D
 - Until runtime-specific direct syntax is validated, continue via the repo-local orchestrator contract in the current session.
 
 ## Initialize
+- Start as Orchestrator Intake for unprefixed user requests.
+- Classify intent before choosing PM/BA/ARCH/DEV/QA or downstream SDTK-CODE/SDTK-OPS paths.
+- Use brainstorm / requirement clarification for unclear ideas before formal PM initiation.
 - Ensure feature key + feature name exist (ask if missing).
 - Read `sdtk-spec.config.json` (project stack + commands) if present.
 - If `toolkit/scripts/init-feature.ps1` exists: run it to create skeleton artifacts; otherwise create the same files from `toolkit/templates/`.
 
 ## Execute pipeline (one phase per turn)
-- Default role: PM (entry point) if user did not specify.
+- Default unprefixed role: Orchestrator Intake. Select PM only when the request is ready for formal SDTK-SPEC product initiation.
 - Respect role tags: `/pm`, `/ba`, `/arch`, `/dev`, `/qa`.
 - For each phase:
   - Create/update the phase artifact(s) in `docs/`.

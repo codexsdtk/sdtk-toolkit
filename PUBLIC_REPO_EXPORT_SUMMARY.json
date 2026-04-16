@@ -1,8 +1,8 @@
 ﻿{
-    "exportedAtUtc":  "2026-04-16T04:26:17Z",
-    "sourceRepoRoot":  "D:\\DucTN\\Source\\Sdkit",
-    "outputDir":  "C:\\Users\\nerot\\AppData\\Local\\Temp\\sdtk-public-restore-6a7b1decf2224e19ba77119cf8d1079b\\export",
-    "manifest":  "D:\\DucTN\\Source\\Sdkit\\scripts\\release\\public-toolkit-export.manifest.json",
+    "exportedAtUtc":  "2026-04-16T12:32:57Z",
+    "sourceRepoRoot":  "(redacted-local-path)",
+    "outputDir":  "(redacted-local-path)",
+    "manifest":  "scripts/release/public-toolkit-export.manifest.json",
     "copiedPaths":  [
                         ".github",
                         ".gitignore",

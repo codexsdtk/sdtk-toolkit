@@ -91,7 +91,7 @@ Write-Host "Assets root : $AssetsRoot"
 Write-Host "Manifest dir: $ManifestDir"
 Write-Host ""
 
-$files = @(Get-ChildItem -LiteralPath $AssetsRoot -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Sort-Object FullName)
+$files = @(Get-ChildItem -LiteralPath $AssetsRoot -Recurse -Force -File | Sort-Object FullName)
 $entries = @()
 $hashLines = @()
 

@@ -1,4 +1,4 @@
-# sdtk-spec-kit
+﻿# sdtk-spec-kit
 
 `sdtk-spec-kit` is the canonical shipped technical interface for `SDTK-SPEC`.
 
@@ -76,7 +76,6 @@ sdtk-spec atlas init --project-path .
 npm install -g sdtk-spec-kit
 
 # 2. Activate your license (activation key was sent to your email)
-sdtk-spec activate --license SDTK-XXXX-YYYY
 
 # 3. Initialize workspace with runtime adapter
 sdtk-spec init --runtime claude
@@ -85,11 +84,8 @@ sdtk-spec init --runtime claude
 sdtk-spec generate --feature-key USER_PROFILE --feature-name "User Profile"
 
 # 5. Use premium features: ingest/audit an existing project
-sdtk-spec project ingest --project-path .
-sdtk-spec project audit --project-path . --json
 
 # 6. Ask grounded questions over project documentation
-sdtk-spec atlas ask --project-path . --question "What is the deployment strategy?"
 ```
 
 The CLI generates the scaffold contract only. Full content enrichment still runs phase-by-phase through PM, BA, ARCH, DEV, and QA using the installed runtime guidance plus the toolkit docs.
@@ -117,63 +113,41 @@ Creates:
 - for `--runtime codex`, skill files install into `$CODEX_HOME/skills/` or `~/.codex/skills/` by default, and into `<project>/.codex/skills/` only when you intentionally launch with the explicit local `CODEX_HOME=<project>/.codex` contract, unless `--skip-runtime-assets` is used
 - `--skip-skills` is deprecated; use `--skip-runtime-assets` instead
 
-### `sdtk-spec auth` (Advanced / Internal)
 
-**Note:** For public Pro/Custom users, use `sdtk-spec activate --license` instead. This command is for advanced or internal organization setups.
 
 Manage GitHub authentication and verify entitlement.
 
 ```bash
-sdtk-spec auth --token <value>   # store PAT (advanced)
-sdtk-spec auth --verify          # check repo access (advanced)
-sdtk-spec auth --status          # show auth state
-sdtk-spec auth --logout          # clear credentials
 ```
 
 #### Entitlement repo override (Advanced)
 
-By default, `sdtk-spec auth --verify` checks access against the built-in private repo. You can override this with the `SDTK_ENTITLEMENT_REPO` environment variable:
 
 ```bash
 # bash / zsh
-export SDTK_ENTITLEMENT_REPO=owner/repo
-sdtk-spec auth --verify
 ```
 
 ```powershell
 # PowerShell
-$env:SDTK_ENTITLEMENT_REPO="owner/repo"
-sdtk-spec auth --verify
 ```
 
-### `sdtk-spec activate` (Pro / Custom)
 
 Unlock premium features with your activation key.
 
 ```bash
-sdtk-spec activate --license SDTK-XXXX-YYYY
-sdtk-spec entitlement status
 ```
 
 Your activation key was sent to your email after purchase. This command:
 - Exchanges your key for a signed entitlement manifest
-- Installs required premium packs locally
-- Unlocks all premium commands immediately
 
-### `sdtk-spec entitlement`
 
 Inspect local entitlement state.
 
 ```bash
-sdtk-spec entitlement status
-sdtk-spec entitlement sync  # advanced / internal only
 ```
 
 Important:
 - `entitlement status` is local-only and does not hit the network.
-- `entitlement sync` is an advanced command for organization-based setups or troubleshooting.
-- For public Pro/Custom users, use `sdtk-spec activate --license` instead.
-- Premium commands such as `atlas ask`, `project ingest`, `project audit`, and `project refresh` fail closed when entitlement or pack integrity is missing.
 
 ### `sdtk-spec generate`
 
@@ -199,7 +173,6 @@ sdtk-spec atlas build    # Rebuild the local document graph from project markdow
 sdtk-spec atlas open     # Open the last successful atlas build in a local browser
 sdtk-spec atlas watch    # Watch for markdown changes and rebuild automatically
 sdtk-spec atlas status   # Show initialization state and last build summary
-sdtk-spec atlas ask      # Ask grounded questions over local Atlas docs (Pro)
 ```
 
 #### First-run flow
@@ -230,7 +203,6 @@ sdtk-spec atlas watch --project-path ./my-project
 sdtk-spec atlas status --project-path ./my-project
 
 # Ask grounded questions over the local Atlas graph (Pro)
-sdtk-spec atlas ask --project-path ./my-project --question "How do I install this toolkit?"
 ```
 
 #### Options (init)
@@ -242,7 +214,6 @@ sdtk-spec atlas init [--project-path <path>] [--output-dir <path>] [--scan-root 
 #### Options (ask)
 
 ```bash
-sdtk-spec atlas ask --question "<text>" [--project-path <path>] [--output-dir <path>] [--source <path-or-id>] [--max-docs <n>] [--json] [--verbose]
 ```
 
 #### Key facts
@@ -251,40 +222,27 @@ sdtk-spec atlas ask --question "<text>" [--project-path <path>] [--output-dir <p
 - The viewer server binds to `127.0.0.1` by default (loopback only).
 - Python 3.8+ must be available in `PATH` for `atlas init`, `build`, and `watch`.
 - Free Atlas scans local markdown files only and does not upload document content to external services.
-- `atlas ask` is a Pro capability and requires valid entitlement (unlock with `sdtk-spec activate --license`) plus a cached premium pack.
-- `sdtk-spec auth` and `sdtk-spec entitlement` are separate capability-management surfaces; they are not required for free Atlas commands.
 
 ### `sdtk-spec project`
 
 Run premium project intelligence workflows against an existing consumer repository.
 
 ```bash
-sdtk-spec project ingest   # Build deterministic project foundation + staged docs baseline (Pro)
-sdtk-spec project audit    # Read-only readiness / risk / gap audit (Pro)
-sdtk-spec project refresh  # Incrementally refresh managed .sdtk/project/ artifacts (Pro)
 ```
 
 Examples:
 
 ```bash
 # First premium ingest against a consumer repo
-sdtk-spec project ingest --project-path ./my-project
 
 # Read-only audit using cached foundation when available
-sdtk-spec project audit --project-path ./my-project --json
 
 # Incrementally refresh foundation, evidence packs, and staged docs baseline
-sdtk-spec project refresh --project-path ./my-project
 ```
 
 Key facts:
 
-- `project ingest`, `project audit`, and `project refresh` are Pro features.
-- All three commands require a valid Pro entitlement (unlock with `sdtk-spec activate --license`) and a cached premium pack.
 - All artifacts stay project-local under `<project>/.sdtk/project/`.
-- `project ingest` writes reusable foundation artifacts such as census, source inventory, profile, module graph, runtime markers, evidence packs, and a staged docs baseline.
-- `project audit` is read-only. It does not mutate live `/docs/`, write new staged docs, or refresh ingest artifacts in place.
-- `project refresh` is incremental and requires an existing managed ingest baseline.
 - None of the project commands modify live `/docs/`; draft outputs remain under `.sdtk/project/`.
 - Maintainer-root guardrails block using the SDTK maintainer monorepo root as a premium project target.
 
@@ -363,9 +321,6 @@ sdtk-spec --version
 - Check your network connection.
 - If the issue persists, contact support with the error message.
 
-**Premium commands still locked after activation**
-- Run `sdtk-spec entitlement status` to verify activation succeeded.
-- If status shows no entitlement, try running `sdtk-spec activate --license <KEY>` again.
 - Reinstall the package if issues persist: `npm install -g sdtk-spec-kit@latest`.
 
 **Payload hash mismatch**

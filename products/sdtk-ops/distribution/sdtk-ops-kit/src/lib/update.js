@@ -298,12 +298,12 @@ async function applyPlan(plan, options) {
   }
 
   if (plan.projectRefreshArgs) {
-    console.log(`  project refresh: ${plan.projectRefreshCommand}`);
+    console.log(`  project files: ${plan.projectRefreshCommand}`);
     await runCommand("project file refresh", process.execPath, [CLI_BIN, ...plan.projectRefreshArgs], {
       verbose: options.verbose,
     });
   } else {
-    console.log(`  project refresh: ${plan.projectRefreshCommand}`);
+    console.log(`  project files: ${plan.projectRefreshCommand}`);
   }
 
   if (plan.runtimeRefreshArgs) {

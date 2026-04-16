@@ -142,6 +142,8 @@ $null
 !/docs/specs/BA_SPEC_BK035_CLAUDE_ARCH_PAYLOAD_PARITY.md
 !/docs/specs/BA_SPEC_BK032_AUTONOMY_95.md
 !/docs/specs/BK032_AUTONOMY_95_FLOW_ACTION_SPEC.md
+!/docs/superpowers/
+!/docs/superpowers/**
 /docs/dev/evidence/*
 # Local Atlas Ask history
 governance/ai/knowledge/atlas/history/

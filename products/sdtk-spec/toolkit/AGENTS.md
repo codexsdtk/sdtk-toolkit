@@ -1,4 +1,4 @@
-# SDTK Suite Multi-Agent Software Development Toolkit
+﻿# SDTK Suite Multi-Agent Software Development Toolkit
 
 Goal: use the SDTK Suite as a coordinated operating model:
 - `SDTK-SPEC` governs upstream discovery, planning, design, traceability, and release gates.
@@ -8,7 +8,9 @@ Goal: use the SDTK Suite as a coordinated operating model:
 `SDTK-SPEC` remains the orchestration and documentation entry point, but the suite is not SPEC-only.
 
 ## 0) Default Rules
-- If role is not specified, default to PM (entry point) and start at Phase 1.
+- If role is not specified, default to Orchestrator Intake, not PM.
+- Orchestrator first classifies the user request, then routes to the smallest sufficient SDTK product, role, and skill.
+- PM starts only when the request is ready for formal SDTK-SPEC product initiation.
 - Do not skip phases. If inputs are missing, ask focused questions before moving on.
 - At the end of every phase, update:
   - `SHARED_PLANNING.md`
@@ -28,7 +30,52 @@ When starting a new session, read context in this order when the files exist:
 4. `governance/ai/core/IMPROVEMENT_BACKLOG.md`
 5. issue-specific controller spec and implementation plan
 
-Do not read the entire historical session archive by default. Use `SDTK_SESSION_MEMORY_*.md` only when chronology or past acceptance details are required.
+
+## 0.3) Orchestrator-First Intake Protocol
+For every unprefixed user request:
+1. Classify the request intent before selecting PM/BA/ARCH/DEV/QA or a downstream product lane.
+2. Route to the smallest sufficient workflow:
+   - unclear idea or early concept -> brainstorm / requirement clarification, then create or update `docs/discovery/REQUIREMENT_[FEATURE_KEY].md`
+   - formal feature discovery or planning -> SDTK-SPEC pipeline
+   - implementation, bug fix, refactor, verification, or ship-ready code -> SDTK-CODE
+   - deploy, release, infrastructure, CI/CD, monitoring, incident, backup, security-infra, or ops verification -> SDTK-OPS
+   - review or release decision -> review/QA workflow
+3. Ask focused questions only when missing information blocks safe routing.
+4. Do not force raw ideas directly into PM Phase 1. Clarify the requirement first in `docs/discovery/REQUIREMENT_[FEATURE_KEY].md`, then start PM initiation only after the artifact is marked `READY_FOR_PM_INITIATION`.
+5. When routing creates artifacts, record decisions and open questions in the correct SDTK artifact.
+
+## 0.4) Intent-To-Skill Routing Matrix
+Use this compact matrix during intake so the agent picks the smallest sufficient workflow instead of defaulting everything to PM:
+
+| User intent | Primary route | Output expectation |
+|---|---|---|
+| Raw idea | Brainstorm / requirement clarification | `docs/discovery/REQUIREMENT_[FEATURE_KEY].md` with clarified problem, scope, assumptions, open questions, and readiness |
+| Approved idea ready for product planning | `SDTK-SPEC` PM initiation | `REQUIREMENT_[FEATURE_KEY]` marked `READY_FOR_PM_INITIATION`, then `PROJECT_INITIATION` kickoff |
+| Formal feature delivery | `SDTK-SPEC` pipeline | PM -> BA -> ARCH -> DEV planning -> CODE handoff -> QA |
+| Build, fix, or refactor implementation | `SDTK-CODE` | Planned, implemented, verified code change |
+| Debug failure or unexpected behavior | `SDTK-CODE` debug | Root cause, bounded fix, regression verification |
+| Deployment, release, infra, or CI/CD work | `SDTK-OPS` | Ops plan or execution plus verification evidence |
+| Code review or spec review | Review / QA workflow | Findings, risks, blockers, acceptance signal |
+| Atlas graph build or viewer work | `sdtk-spec atlas` workflow | Local `.sdtk/atlas` graph or viewer result |
+| "what should we do next" | Orchestrator state review | Recommended next action with rationale and lane choice |
+
+Guardrails:
+- Explicit user role prefix wins unless safety or missing critical inputs block execution.
+- Raw idea clarification should use `docs/discovery/REQUIREMENT_[FEATURE_KEY].md`; do not widen BK-099 into generator automation, package sync, or BK-100 validation work.
+
+## 0.5) Proceed-Vs-Ask Decision Rules
+Ask clarification when:
+1. the requested outcome is ambiguous
+2. safety, security, or release impact is unclear
+3. the target repo, project, or path is missing
+4. implementation is requested without an acceptance boundary
+5. the next command could mutate external state
+
+Proceed when:
+1. the intent and target are clear
+2. the task is read-only analysis
+3. the user already approved the relevant plan or spec
+4. the requested change is bounded and verifiable
 
 ## 0.1) Clarification Protocol
 Apply for all roles (`/pm`, `/ba`, `/arch`, `/dev`, `/qa`):
@@ -40,9 +87,15 @@ Apply for all roles (`/pm`, `/ba`, `/arch`, `/dev`, `/qa`):
    - asking the user if source information is still missing.
 5. Record decisions in PRD (`Decision Log`) and update the originating `OQ-xx` with resolution.
 
+For raw ideas before PM initiation:
+1. Use `docs/discovery/REQUIREMENT_[FEATURE_KEY].md` as the canonical clarification artifact.
+2. Record scope, non-goals, assumptions, constraints, open questions, and readiness there before opening `PROJECT_INITIATION`.
+3. Treat the discovery artifact as a bridge into PM initiation, not as a PRD replacement.
+
 ## 1) Role Selection In One Message
 When the user prefixes a message, execute that role:
-- `/pm` (entry point + orchestrator)
+- `/orchestrator` (default intake + routing)
+- `/pm` (formal product initiation + planning)
 - `/ba`
 - `/arch`
 - `/dev`
@@ -54,12 +107,20 @@ Notes:
 - There is no separate `/tester` role. Test-case design belongs to QA with `sdtk-test-case-spec`.
 
 ## 2) Standard 6-Phase Pipeline
+Use this formal pipeline after Orchestrator Intake determines that the request is ready for SDTK-SPEC feature delivery.
+
+0. Discovery / Clarification when needed -> `docs/discovery/REQUIREMENT_[FEATURE_KEY].md`
 1. PM Initiation -> `docs/product/PROJECT_INITIATION_[FEATURE_KEY].md`
 2. BA Analysis -> `docs/specs/BA_SPEC_[FEATURE_KEY].md`
 3. PM Planning -> `docs/product/PRD_[FEATURE_KEY].md` + `docs/product/BACKLOG_[FEATURE_KEY].md`
 4. ARCH Design -> `docs/architecture/ARCH_DESIGN_[FEATURE_KEY].md` (plus API/layout docs when needed)
 5. DEV Planning + SDTK-CODE Handoff -> `docs/dev/FEATURE_IMPL_PLAN_[FEATURE_KEY].md` + `docs/dev/CODE_HANDOFF_[FEATURE_KEY].json`
 6. QA Testing -> `docs/qa/[FEATURE_KEY]_TEST_CASE.md` + `docs/qa/QA_RELEASE_REPORT_[FEATURE_KEY].md`
+
+Notes:
+- Phase 0 is only for raw ideas, unclear concepts, and early feature discovery.
+- PM initiation starts only after `docs/discovery/REQUIREMENT_[FEATURE_KEY].md` is marked `READY_FOR_PM_INITIATION`.
+- The discovery artifact does not replace PM, BA, PRD, backlog, or architecture deliverables.
 
 Default bridge after Phase 5 planning output:
 - `/dev` emits the handoff

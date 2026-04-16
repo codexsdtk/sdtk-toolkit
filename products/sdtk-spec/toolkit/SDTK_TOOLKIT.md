@@ -1,4 +1,4 @@
-# SDTK-SPEC Multi-Agent Software Development Toolkit
+﻿# SDTK-SPEC Multi-Agent Software Development Toolkit
 
 This guide explains how to run SDTK-SPEC as a runtime-agnostic toolkit with adapters for Codex and Claude Code.
 It is product-specific to `SDTK-SPEC` within the broader `SDTK Suite` family (`SDTK-SPEC`, `SDTK-CODE`, `SDTK-OPS`).
@@ -45,9 +45,6 @@ In the current source line, SDTK-SPEC also exposes two adjacent capability group
   - local markdown graph only
   - no auth or entitlement required
 - Premium Atlas/project intelligence:
-  - `sdtk-spec atlas ask`
-  - `sdtk-spec project ingest|audit|refresh`
-  - requires auth + entitlement sync + premium pack availability
   - writes staged artifacts under `<project>/.sdtk/project/`
   - does not mutate live `/docs/`
 
