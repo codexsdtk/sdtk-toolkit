@@ -1,4 +1,0 @@
-$ codex runtime install --runtime codex --scope project
-sdtk-ops: Codex does not support project-local skills. Use --scope user instead.
-[exit=1]
-
