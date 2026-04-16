@@ -1,0 +1,6 @@
+{
+  "toolkit": "SDTK-OPS",
+  "version": "1.0.0",
+  "skills_path": "toolkit/skills",
+  "skill_prefix": "ops-"
+}

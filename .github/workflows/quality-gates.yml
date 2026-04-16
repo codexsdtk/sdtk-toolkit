@@ -1,0 +1,200 @@
+﻿name: quality-gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  docs-lint:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run docs-lint
+        run: python scripts/ci/docs_lint.py
+
+  path-check:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run path-check
+        run: python scripts/ci/path_check.py
+
+  template-token-check:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run template-token-check
+        run: python scripts/ci/template_token_check.py
+
+  naming-drift-check:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run naming-drift-check
+        run: python scripts/ci/naming_drift_check.py
+
+  rule-file-guard:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run rule-file-guard
+        run: python scripts/ci/rule_file_guard.py --ci
+        env:
+          GITHUB_BEFORE_SHA: ${{ github.event.before }}
+
+  script-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run script-smoke
+        run: python scripts/ci/script_smoke.py
+
+  bom-check:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run bom-check
+        run: python scripts/ci/bom_check.py
+
+  cli-parity-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18'
+
+      - name: Sync toolkit payload
+        run: powershell -ExecutionPolicy Bypass -File products/sdtk-spec/distribution/sdtk-spec-kit/scripts/sync-toolkit-assets.ps1
+
+      - name: Build payload manifest
+        run: powershell -ExecutionPolicy Bypass -File products/sdtk-spec/distribution/sdtk-spec-kit/scripts/build-toolkit-manifest.ps1
+
+      - name: Verify CLI help
+        run: node products/sdtk-spec/distribution/sdtk-spec-kit/bin/sdtk.js --help
+
+      - name: Verify CLI version
+        run: node products/sdtk-spec/distribution/sdtk-spec-kit/bin/sdtk.js --version
+
+      - name: Smoke test init (codex)
+        run: |
+          $tmp = New-TemporaryFile | ForEach-Object { Remove-Item $_; New-Item -ItemType Directory -Path $_ }
+          node products/sdtk-spec/distribution/sdtk-spec-kit/bin/sdtk.js init --runtime codex --project-path $tmp --skip-skills
+          if (-not (Test-Path (Join-Path $tmp 'CODEX.md'))) { throw 'CODEX.md missing' }
+          Remove-Item $tmp -Recurse -Force
+        shell: pwsh
+
+      - name: Smoke test generate
+        run: |
+          $tmp = New-TemporaryFile | ForEach-Object { Remove-Item $_; New-Item -ItemType Directory -Path $_ }
+          node products/sdtk-spec/distribution/sdtk-spec-kit/bin/sdtk.js generate --feature-key SMOKE_TEST --feature-name "Smoke Test" --project-path $tmp
+          $count = (Get-ChildItem $tmp -Recurse -File).Count
+          if ($count -lt 17) { throw "Expected 17+ files, got $count" }
+          Remove-Item $tmp -Recurse -Force
+        shell: pwsh
+
+  npm-pack-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18'
+
+      - name: Sync toolkit payload
+        run: powershell -ExecutionPolicy Bypass -File products/sdtk-spec/distribution/sdtk-spec-kit/scripts/sync-toolkit-assets.ps1
+
+      - name: Build payload manifest
+        run: powershell -ExecutionPolicy Bypass -File products/sdtk-spec/distribution/sdtk-spec-kit/scripts/build-toolkit-manifest.ps1
+
+      - name: npm pack dry run
+        run: cd products/sdtk-spec/distribution/sdtk-spec-kit && npm pack --dry-run
+
+  tests:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18'
+
+      - name: Sync toolkit payload
+        run: powershell -ExecutionPolicy Bypass -File products/sdtk-spec/distribution/sdtk-spec-kit/scripts/sync-toolkit-assets.ps1
+
+      - name: Build payload manifest
+        run: powershell -ExecutionPolicy Bypass -File products/sdtk-spec/distribution/sdtk-spec-kit/scripts/build-toolkit-manifest.ps1
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -p "test_*.py"

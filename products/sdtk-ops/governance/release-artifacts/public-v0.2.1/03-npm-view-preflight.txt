@@ -1,0 +1,24 @@
+$ npm.cmd view sdtk-ops-kit version
+0.2.0
+[exit=0]
+
+$ npm.cmd view sdtk-ops-kit dist-tags
+{ latest: '0.2.0' }
+[exit=0]
+
+$ npm.cmd view sdtk-ops-kit bin
+{ 'sdtk-ops': 'bin/sdtk-ops.js' }
+[exit=0]
+
+$ npm.cmd view sdtk-ops-kit@0.2.1 version
+npm ERR! code E404
+npm ERR! 404 No match found for version 0.2.1
+npm ERR! 404 
+npm ERR! 404  'sdtk-ops-kit@0.2.1' is not in this registry.
+npm ERR! 404 
+npm ERR! 404 Note that you can also install from a
+npm ERR! 404 tarball, folder, http url, or git url.
+
+npm ERR! A complete log of this run can be found in: C:\Users\nerot\AppData\Local\npm-cache\_logs\2026-03-25T06_11_09_811Z-debug-0.log
+[exit=1]
+

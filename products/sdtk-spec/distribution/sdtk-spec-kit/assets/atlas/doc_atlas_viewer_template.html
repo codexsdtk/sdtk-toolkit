@@ -1,0 +1,3722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlas Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235f89ff'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-size='28' font-weight='700' fill='white'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --text:#e6edf3;--text2:#8b949e;--accent:#58a6ff;--red:#f85149;
+  --graph-bg:#f8f6f1;--graph-surface:#ffffff;--graph-surface2:#f4efe6;--graph-surface3:#fbfaf7;
+  --graph-border:#e4ddd1;--graph-border-strong:#cfc3b2;--graph-text:#1f2a37;--graph-muted:#66758a;
+  --graph-shadow:0 28px 60px rgba(15,23,42,0.12);--graph-grid:rgba(126,140,158,0.16);
+  --atlas-panel-width:min(560px,calc(100% - 32px));--atlas-panel-expanded-width:min(672px,calc(100% - 32px));
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--surface);
+  border-top:1px solid var(--border);z-index:100}
+.nav button{flex:1;padding:10px 4px 8px;background:none;border:none;
+  color:var(--text2);font-size:11px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav button.active{color:var(--accent)}
+.nav button svg{width:20px;height:20px}
+.panel{display:none;padding:16px;padding-bottom:80px;min-height:100vh}
+.panel.active{display:block}
+.header{padding:20px 0 12px;margin-bottom:8px}
+.header h1{font-size:22px;font-weight:700}
+.header p{color:var(--text2);font-size:12px;margin-top:4px}
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.dash-card .num{font-size:28px;font-weight:700;display:block}
+.dash-card .label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.stat-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.stat-row .label{color:var(--text2);font-size:12px}
+.stat-row .val{font-weight:600;font-size:13px}
+.search-box{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;margin-bottom:12px;outline:none}
+.search-box:focus{border-color:var(--accent)}
+.search-box::placeholder{color:var(--text2)}
+.filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.filter-btn{font-size:11px;padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer}
+.filter-btn.active{border-color:var(--accent);color:var(--accent)}
+.cat-header{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;margin:16px 0 6px;padding-left:2px}
+.doc-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:5px;cursor:pointer;transition:border-color .15s}
+.doc-item:hover{border-color:var(--accent);background:var(--surface2)}
+.doc-item .title{font-weight:600;font-size:13px;margin-bottom:2px}
+.doc-item .meta{font-size:11px;color:var(--text2)}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:16px;font-weight:600;margin-right:4px}
+.detail{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto;padding:16px;padding-bottom:80px}
+.detail.open{display:block}
+.back-btn{background:var(--surface);border:1px solid var(--border);color:var(--accent);padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;margin-bottom:14px;display:inline-flex;align-items:center;gap:5px}
+.detail-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px}
+.detail-card h2{font-size:18px;margin-bottom:6px}
+.detail-card h3{font-size:13px;color:var(--accent);margin:14px 0 6px;border-bottom:1px solid var(--border);padding-bottom:3px}
+.detail-card p{margin-bottom:8px;font-size:13px}
+.detail-card ul{margin:4px 0 10px 18px}
+.detail-card li{font-size:12px;margin-bottom:3px}
+.detail-card code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:12px;font-family:'SF Mono',Consolas,monospace}
+.wiki-link{color:var(--accent);cursor:pointer;text-decoration:underline dotted}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.graph-shell{background:linear-gradient(180deg,#fdfcf9 0%,#f8f4ec 100%);border:1px solid var(--graph-border);border-radius:28px;padding:18px;box-shadow:var(--graph-shadow);color:var(--graph-text)}
+.graph-main-header{margin-bottom:12px}
+.graph-main-header h1{font-size:24px;color:var(--graph-text);font-weight:700}
+.graph-main-header p{color:var(--graph-muted);font-size:12px;margin-top:4px}
+.graph-toolbar{position:relative;background:rgba(255,255,255,0.84);border:1px solid var(--graph-border);border-radius:20px;padding:14px 14px 12px;margin-bottom:14px;box-shadow:0 12px 28px rgba(15,23,42,0.08)}
+.graph-shell .search-box{background:var(--graph-surface3);border:1px solid var(--graph-border);color:var(--graph-text);margin-bottom:10px}
+.graph-shell .search-box:focus{border-color:#5f89ff;box-shadow:0 0 0 3px rgba(95,137,255,0.12)}
+.graph-shell .search-box::placeholder{color:#8a97a8}
+.graph-shell .filter-row{gap:8px;margin-bottom:10px}
+.graph-shell .filter-btn{background:var(--graph-surface3);border:1px solid var(--graph-border);color:var(--graph-muted);padding:6px 12px;font-weight:600}
+.graph-shell .filter-btn.active{background:#ffffff;border-color:#5f89ff;color:#3156c9;box-shadow:0 6px 16px rgba(95,137,255,0.14)}
+.toggle-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.toggle-btn{font-size:11px;padding:6px 10px;border-radius:16px;border:1px solid var(--graph-border);background:var(--graph-surface2);color:var(--graph-muted);cursor:pointer;font-weight:600}
+.toggle-btn.active{background:#ffffff;border-color:#5f89ff;color:#3156c9}
+.zoom-badge{display:inline-flex;align-items:center;justify-content:center;min-width:74px;padding:6px 12px;border-radius:999px;background:#ffffff;border:1px solid var(--graph-border-strong);color:#3156c9;font-size:11px;font-weight:700;box-shadow:0 6px 14px rgba(49,86,201,0.08)}
+.graph-scope-row{display:none;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
+.graph-scope-row.active{display:flex}
+.graph-scope-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#ffffff;border:1px solid var(--graph-border-strong);font-size:11px;font-weight:700;color:#3156c9;box-shadow:0 6px 14px rgba(49,86,201,0.08)}
+.graph-scope-clear{border:none;background:transparent;color:#66758a;font-size:11px;font-weight:700;cursor:pointer;padding:4px 2px}
+.graph-results{display:none;position:absolute;left:14px;right:14px;top:54px;z-index:20;background:rgba(255,255,255,0.98);border:1px solid var(--graph-border);border-radius:14px;box-shadow:0 18px 40px rgba(15,23,42,0.14);padding:8px}
+.graph-results.open{display:block}
+.result-item{background:transparent;border:1px solid transparent;border-radius:10px;padding:9px 10px;margin-bottom:4px;cursor:pointer}
+.result-item:hover,.result-item.active{background:#f7f4ee;border-color:#d9cfbf}
+.result-item strong{display:block;font-size:12px;color:var(--graph-text)}
+.result-item span{font-size:11px;color:var(--graph-muted)}
+.graph-hint{font-size:11px;color:var(--graph-muted);margin-top:2px}
+.graph-stage{position:relative;min-height:720px}
+.graph-canvas-shell{position:relative;background:radial-gradient(circle at 18px 18px, var(--graph-grid) 1.1px, transparent 1.2px) 0 0/36px 36px,linear-gradient(180deg,#ffffff 0%,#fbfaf7 100%);border:1px solid var(--graph-border);border-radius:24px;padding:14px;overflow:hidden;min-height:720px}
+.graph-legend{position:absolute;left:18px;bottom:18px;display:flex;flex-wrap:wrap;gap:8px;max-width:calc(100% - 40px);z-index:2}
+.legend-label{display:inline-flex;align-items:center;padding:6px 8px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#7a8698}
+.legend-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.88);border:1px solid var(--graph-border);font-size:11px;color:var(--graph-muted);font-weight:600;backdrop-filter:blur(8px);cursor:pointer}
+.legend-pill.active{background:#ffffff;border-color:#5f89ff;color:#3156c9;box-shadow:0 6px 16px rgba(95,137,255,0.14)}
+.legend-pill.edge{color:#52606f}
+.legend-pill.edge.active{border-color:#3156c9;color:#2349c0}
+#graph-canvas{width:100%;display:block;border-radius:18px;background:transparent;cursor:grab;min-height:684px}
+#graph-canvas.dragging{cursor:grabbing}
+.graph-hover-card{position:absolute;min-width:220px;max-width:320px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,0.97);border:1px solid var(--graph-border);box-shadow:0 18px 34px rgba(15,23,42,0.14);pointer-events:none;z-index:6;display:none}
+.graph-hover-card.open{display:block}
+.graph-hover-title{font-size:13px;font-weight:700;color:var(--graph-text)}
+.graph-hover-meta{font-size:11px;color:var(--graph-muted);margin-top:4px}
+.graph-hover-body{font-size:12px;color:#41526a;margin-top:8px;line-height:1.55}
+.graph-focus-overlay{position:absolute;top:18px;right:18px;bottom:18px;width:min(430px,34vw);display:flex;align-items:stretch;pointer-events:none;z-index:8}
+.graph-focus-overlay.compact{width:var(--atlas-panel-width)}
+.graph-focus-overlay.expanded{width:var(--atlas-panel-expanded-width)}
+.graph-focus-panel{pointer-events:auto;display:flex;flex-direction:column;width:100%;background:rgba(255,255,255,0.96);border:1px solid var(--graph-border);border-radius:24px;box-shadow:0 18px 34px rgba(15,23,42,0.14);overflow:hidden;backdrop-filter:blur(18px)}
+.graph-focus-header{display:flex;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--graph-border)}
+.graph-focus-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 10px 24px rgba(15,23,42,0.14)}
+.graph-focus-meta{flex:1;min-width:0}
+.graph-focus-kicker{display:block;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#61748b;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.graph-focus-doc-title{font-size:15px;font-weight:700;color:var(--graph-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.graph-focus-subtle{display:block;font-size:11px;color:#8a97a8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.graph-focus-actions{display:flex;align-items:center;gap:8px}
+.graph-history-btn,.graph-overlay-btn,.graph-focus-close{height:34px;border-radius:999px;border:1px solid var(--graph-border);background:#fff;color:#62748a;cursor:pointer}
+.graph-history-btn{min-width:34px;padding:0 10px;font-size:12px;font-weight:700}
+.graph-history-btn:disabled{opacity:.45;cursor:default}
+.graph-overlay-btn{padding:0 12px;font-size:11px;font-weight:700;color:#3156c9}
+.graph-focus-close{width:34px;font-size:20px;line-height:1}
+.graph-detail-card{flex:1;overflow:auto;padding:20px 22px 24px;color:var(--graph-text)}
+.graph-detail-card h2{font-size:18px;margin-bottom:8px;color:var(--graph-text)}
+.graph-detail-card h3{font-size:13px;margin:16px 0 8px;color:#3156c9;border-bottom:1px solid var(--graph-border);padding-bottom:4px}
+.graph-detail-card h4{font-size:12px;margin:12px 0 6px;color:#41526a}
+.graph-detail-card p{margin-bottom:10px;font-size:13px;color:var(--graph-text)}
+.graph-detail-card ul{margin:4px 0 12px 18px}
+.graph-detail-card li{font-size:12px;margin-bottom:5px;color:var(--graph-text)}
+.graph-detail-card code{background:#f3efe7;border:1px solid #e6ded1;padding:1px 5px;border-radius:5px;font-size:12px;font-family:'SF Mono',Consolas,monospace;color:#354153}
+.graph-detail-card .muted{color:var(--graph-muted);font-size:12px}
+.graph-detail-card .subtle{font-size:11px;color:#8893a1;margin-top:-2px}
+.graph-detail-card .full-mode-title{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#7a8698;margin-bottom:10px}
+.graph-note-empty{display:flex;flex-direction:column;justify-content:center;min-height:320px;color:var(--graph-muted)}
+.graph-note-prose{display:flex;flex-direction:column;gap:12px}
+.graph-note-prose p{margin:0;font-size:14px;line-height:1.7;color:#243142}
+.graph-note-prose h3{margin:6px 0 0;font-size:22px;border:none;color:#162132;padding:0}
+.graph-note-prose h4{margin:8px 0 0;font-size:16px;color:#243142}
+.graph-note-prose ul,.graph-note-prose ol{margin:0 0 0 20px}
+.graph-note-prose blockquote{margin:0;padding:10px 14px;border-left:3px solid #b9c7de;background:#f5f8fd;color:#41526a;border-radius:10px}
+.graph-note-prose pre{margin:0;overflow:auto;padding:14px 16px;background:#f3efe7;border:1px solid #e6ded1;border-radius:12px}
+.graph-note-prose pre code{background:none;border:none;padding:0;font-size:12px;display:block;white-space:pre-wrap}
+.graph-note-prose hr{border:none;border-top:1px solid #e6ded1;margin:6px 0}
+.graph-note-mermaid-shell{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid #e6ded1;border-radius:12px;background:#fff;box-shadow:0 8px 18px rgba(15,23,42,0.05)}
+.graph-note-mermaid{display:flex;align-items:center;justify-content:center;overflow:auto;min-height:120px}
+.graph-note-mermaid svg{display:block;max-width:100%;height:auto}
+.graph-note-mermaid-status{font-size:11px;color:#66758a}
+.graph-note-mermaid-status.error{color:#b54747;font-weight:600}
+.graph-focus-footer{position:sticky;bottom:0;display:flex;gap:10px;justify-content:space-between;padding:14px 20px 18px;border-top:1px solid var(--graph-border);background:linear-gradient(180deg,rgba(255,255,255,0.78) 0%,rgba(255,255,255,0.98) 45%)}
+.inline-btn{background:#ffffff;border:1px solid var(--graph-border-strong);color:#3156c9;padding:9px 14px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(49,86,201,0.10)}
+.inline-btn:hover{background:#f6f8ff}
+.graph-badge-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px 0}
+.graph-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#f5f1e8;border:1px solid #e6dccd;font-size:11px;font-weight:600;color:#52606f}
+.graph-history-strip{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.graph-history-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:6px 11px;border-radius:999px;border:1px solid #d9cfbf;background:#fff;color:#52606f;font-size:11px;font-weight:700;cursor:pointer}
+.graph-history-chip.active{background:#eef3ff;border-color:#6f8fff;color:#2349c0}
+.graph-history-chip span{display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.graph-chip-section{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.graph-chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.graph-chip-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#7a8698}
+.graph-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:6px 11px;border-radius:999px;border:1px solid #d9cfbf;background:#fff;color:#3156c9;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(49,86,201,0.07)}
+.graph-chip:hover{background:#f6f8ff}
+.graph-chip.active{background:#eef3ff;border-color:#6f8fff;color:#2349c0}
+.graph-chip span{display:inline-block;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.graph-chip small{font-size:10px;color:#6f7f92}
+@media (max-width: 1180px){
+  .graph-stage{display:flex;flex-direction:column;gap:16px}
+  .graph-focus-overlay{position:relative;top:auto;right:auto;bottom:auto;width:100%;pointer-events:auto}
+  .graph-canvas-shell{min-height:560px}
+  .graph-chip span{max-width:none}
+}
+
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#eef3f9 0%,#f7f3ec 100%);color:var(--graph-text);font-size:14px;line-height:1.6;height:100vh;overflow:hidden;--nav-width:0px}
+body.nav-open{--nav-width:84px}
+.panel{border-radius:30px;overflow:hidden}
+a{color:#3156c9;text-decoration:none}
+.panel{display:none;position:fixed;top:16px;right:16px;bottom:16px;left:calc(var(--nav-width) + 16px);padding:0;min-height:0;overflow:hidden}
+.panel.active{display:flex;flex-direction:column}
+.nav{position:fixed;top:16px;bottom:16px;left:16px;right:auto;width:72px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:12px 8px;background:linear-gradient(180deg,rgba(252,250,245,0.97) 0%,rgba(245,239,229,0.98) 100%);border:1px solid #ddcfba;border-radius:28px;box-shadow:0 24px 48px rgba(94,83,63,0.12);z-index:100;gap:12px;overflow:hidden;opacity:0;pointer-events:none;transform:translateX(-18px);transition:opacity .18s ease,transform .18s ease}
+body.nav-open .nav{opacity:1;pointer-events:auto;transform:translateX(0)}
+.nav button{flex:0 0 auto;width:54px;height:54px;padding:0;background:transparent;border:1px solid transparent;color:#6d7d95;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;border-radius:20px;min-height:54px;transition:all .18s ease}
+.nav button.active{background:linear-gradient(180deg,rgba(255,255,255,0.94) 0%,rgba(247,243,237,0.98) 100%);border-color:#d9cfbf;color:#24344d;box-shadow:0 14px 28px rgba(94,83,63,0.12)}
+.nav button:hover{color:#24344d;background:rgba(255,255,255,0.74)}
+.nav button svg{width:22px;height:22px}
+.nav button .label{display:none}
+.nav-toggle-rail{display:none}
+body.nav-open .nav-toggle-rail{display:flex}
+.screen-shell,.graph-shell{position:relative;height:100%;display:flex;flex-direction:column;min-height:0;background:linear-gradient(180deg,#fdfcf9 0%,#f8f4ec 100%);border:1px solid var(--graph-border);border-radius:30px;padding:18px;box-shadow:var(--graph-shadow);color:var(--graph-text);overflow:hidden}
+.header{padding:4px 2px 14px;margin-bottom:6px;flex:0 0 auto}
+.header-top{display:flex;align-items:center;gap:12px}
+.page-nav-toggle{width:42px;height:42px;border-radius:14px;border:1px solid #d9cfbf;background:rgba(255,255,255,0.92);color:#4a5c76;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(49,86,201,0.08);flex:0 0 auto}
+.page-nav-toggle:hover{background:#ffffff;color:#3156c9}
+.page-nav-toggle svg{width:20px;height:20px}
+body.nav-open .page-nav-toggle{display:none}
+.header h1{font-size:26px;font-weight:750;color:var(--graph-text)}
+.header p{color:var(--graph-muted);font-size:12px;margin-top:4px}
+.screen-toolbar{position:relative;background:rgba(255,255,255,0.84);border:1px solid var(--graph-border);border-radius:20px;padding:14px 14px 12px;margin-bottom:14px;box-shadow:0 12px 28px rgba(15,23,42,0.08);flex:0 0 auto}
+.screen-scroll{flex:1;min-height:0;overflow:auto;padding-right:4px}
+.dash-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.dash-card{background:rgba(255,255,255,0.9);border:1px solid var(--graph-border);border-radius:18px;padding:16px;text-align:left;box-shadow:0 10px 20px rgba(15,23,42,0.05)}
+.dash-card .num{font-size:30px;font-weight:800;display:block;margin-bottom:8px}
+.dash-card .label{font-size:11px;color:var(--graph-muted);text-transform:uppercase;letter-spacing:0.12em}
+.stat-row{background:rgba(255,255,255,0.88);border:1px solid var(--graph-border);border-radius:16px;padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 18px rgba(15,23,42,0.05)}
+.stat-row .label{color:var(--graph-muted);font-size:12px}
+.stat-row .val{font-weight:700;font-size:13px}
+#panel-docs .search-box{background:var(--graph-surface3);border:1px solid var(--graph-border);color:var(--graph-text);margin-bottom:10px}
+#panel-docs .search-box:focus{border-color:#5f89ff;box-shadow:0 0 0 3px rgba(95,137,255,0.12)}
+#panel-docs .search-box::placeholder{color:#8a97a8}
+#panel-docs .filter-row{gap:8px;margin-bottom:0}
+#panel-docs .filter-btn{background:var(--graph-surface3);border:1px solid var(--graph-border);color:var(--graph-muted);padding:6px 12px;font-weight:600}
+#panel-docs .filter-btn.active{background:#ffffff;border-color:#5f89ff;color:#3156c9;box-shadow:0 6px 16px rgba(95,137,255,0.14)}
+.doc-item{background:rgba(255,255,255,0.88);border:1px solid var(--graph-border);border-radius:16px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;color:var(--graph-text);box-shadow:0 8px 16px rgba(15,23,42,0.04)}
+.doc-item:hover{border-color:#5f89ff;background:#ffffff;transform:translateY(-1px);box-shadow:0 12px 22px rgba(49,86,201,0.10)}
+.doc-item .title{font-weight:700;font-size:13px;margin-bottom:4px}
+.doc-item .meta{font-size:11px;color:var(--graph-muted)}
+.detail{display:none;position:absolute;inset:10%;z-index:80;background:rgba(255,255,255,0.96);border:1px solid var(--graph-border);border-radius:26px;box-shadow:0 30px 70px rgba(15,23,42,0.22);backdrop-filter:blur(18px);overflow:hidden;color:var(--graph-text)}
+.detail.open{display:flex;flex-direction:column}
+.detail-header{display:flex;align-items:center;gap:14px;padding:22px 34px 18px;border-bottom:1px solid var(--graph-border);background:rgba(255,255,255,0.94);flex:0 0 auto}
+.detail-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;box-shadow:0 10px 24px rgba(15,23,42,0.14);flex:0 0 auto}
+.detail-meta{flex:1;min-width:0}
+.detail-kicker{display:block;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#61748b;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detail-title{font-size:16px;font-weight:800;color:var(--graph-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.detail-subtitle{display:block;font-size:11px;color:#8a97a8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detail-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.detail-nav-btn,.detail-close{height:36px;border-radius:999px;border:1px solid var(--graph-border);background:#fff;color:#62748a;cursor:pointer;box-shadow:0 8px 18px rgba(15,23,42,0.05)}
+.detail-nav-btn{min-width:36px;padding:0 11px;font-size:13px;font-weight:800}
+.detail-nav-btn:disabled{opacity:.42;cursor:default}
+.detail-close{width:36px;font-size:22px;line-height:1}
+.detail-card{flex:1;min-height:0;overflow:auto;box-sizing:border-box;align-self:center;width:min(1180px,calc(100% - 72px));margin:20px auto 24px;padding:24px 28px 28px;background:linear-gradient(180deg,#fdfcf9 0%,#f8f4ec 100%);border:1px solid var(--graph-border);border-radius:22px;box-shadow:0 10px 22px rgba(15,23,42,0.08);color:var(--graph-text)}
+.detail-card h2{font-size:22px;margin-bottom:8px}
+.detail-card h3{font-size:13px;color:#3156c9;margin:16px 0 8px;border-bottom:1px solid var(--graph-border);padding-bottom:4px}
+.detail-card p,.detail-card li{color:var(--graph-text)}
+.detail-card code{background:#f3efe7;border:1px solid #e6ded1;padding:1px 5px;border-radius:5px;font-size:12px;font-family:'SF Mono',Consolas,monospace;color:#354153}
+.graph-shell{padding:18px}
+.graph-main-header{margin-bottom:10px;flex:0 0 auto}
+.graph-main-header h1{font-size:26px}
+.graph-toolbar{flex:0 0 auto;padding:12px 14px 10px;margin-bottom:12px}
+.graph-hint{font-size:11px;color:var(--graph-muted);margin-top:4px}
+.graph-stage{position:relative;display:flex;flex:1;min-height:0}
+.graph-canvas-shell{position:relative;flex:1;min-height:0;height:100%;background:radial-gradient(circle at 18px 18px, var(--graph-grid) 1.1px, transparent 1.2px) 0 0/36px 36px,linear-gradient(180deg,#ffffff 0%,#fbfaf7 100%);border:1px solid var(--graph-border);border-radius:24px;padding:14px;overflow:hidden}
+#graph-canvas{width:100%;height:100%;display:block;border-radius:18px;background:transparent;cursor:grab;min-height:0}
+.graph-focus-overlay{position:absolute;top:14px;right:14px;bottom:14px;width:min(430px,34vw);display:flex;align-items:stretch;pointer-events:none;z-index:8}
+.graph-focus-overlay.compact{width:var(--atlas-panel-width)}
+.graph-focus-overlay.expanded{width:var(--atlas-panel-expanded-width)}
+.graph-legend{left:16px;bottom:16px;max-width:calc(100% - 32px)}
+@media (max-width: 1440px){
+  .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width: 1180px){
+  body{overflow:auto;height:auto;min-height:100vh}
+  .panel{position:relative;inset:auto;left:auto;right:auto;top:auto;bottom:auto;height:auto;min-height:calc(100vh - 32px);padding-left:0}
+  body.nav-open{--nav-width:0px}
+  .nav{position:relative;top:auto;bottom:auto;left:auto;width:100%;height:auto;flex-direction:row;justify-content:flex-start;overflow:auto;padding:10px;opacity:1;pointer-events:auto;transform:none;margin-bottom:12px}
+  .nav button{min-height:54px;min-width:54px}
+  .nav-toggle-rail{display:none !important}
+  body.nav-open .page-nav-toggle{display:flex}
+  .panel.active{min-height:calc(100vh - 132px)}
+  .graph-stage{display:flex;flex-direction:column;gap:14px}
+  .graph-focus-overlay{position:relative;top:auto;right:auto;bottom:auto;width:100%;pointer-events:auto}
+  .graph-canvas-shell{min-height:420px}
+}
+
+.graph-stage{position:relative;display:flex;flex:1;min-height:0}
+.graph-canvas-shell{position:relative;flex:1;min-height:0;height:100%;padding:14px;overflow:hidden}
+.graph-toolbar-overlay{position:absolute;top:14px;left:14px;z-index:9;display:flex;flex-direction:column;width:var(--atlas-panel-width);max-width:calc(100% - 32px);max-height:calc(100% - 28px);background:rgba(255,255,255,0.94);border:1px solid var(--graph-border);border-radius:24px;box-shadow:0 18px 34px rgba(15,23,42,0.12);backdrop-filter:blur(18px);padding:12px 12px 10px;overflow:visible;pointer-events:auto;transition:width .18s ease,box-shadow .18s ease}
+.graph-toolbar-overlay.compact{width:var(--atlas-panel-width)}
+.graph-toolbar-overlay.expanded{width:var(--atlas-panel-expanded-width)}
+.graph-toolbar-overlay.minimized{width:auto;max-width:none;padding:0;background:transparent;border:none;box-shadow:none;backdrop-filter:none;overflow:visible}
+.graph-toolbar-overlay.minimized .graph-toolbar-drag-bar,.graph-toolbar-overlay.minimized .graph-toolbar-top,.graph-toolbar-overlay.minimized .graph-results{display:none}
+.graph-toolbar-peek{display:none;align-items:center;gap:10px;padding:10px 14px;border-radius:18px;border:1px solid var(--graph-border);background:rgba(255,255,255,0.96);box-shadow:0 18px 34px rgba(15,23,42,0.14);color:#3156c9;font-size:12px;font-weight:800;cursor:pointer;user-select:none}
+.graph-toolbar-overlay.minimized .graph-toolbar-peek{display:inline-flex}
+.graph-toolbar-peek-glyph{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4f78ff 0%,#7f95ff 100%);color:#fff;font-weight:800;box-shadow:0 10px 24px rgba(15,23,42,0.14)}
+.graph-toolbar-drag-bar{display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0 6px;cursor:move;user-select:none}
+.graph-toolbar-drag-bar span{width:28px;height:4px;border-radius:999px;background:#d8dfe8}
+.graph-toolbar-top{display:flex;align-items:center;gap:8px}
+.graph-toolbar-top .search-box{margin:0;flex:1;min-width:0}
+.graph-toolbar-toggle{width:42px;height:42px;border-radius:14px;border:1px solid var(--graph-border-strong);background:#ffffff;color:#3156c9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;box-shadow:0 10px 20px rgba(49,86,201,0.10)}
+.graph-toolbar-toggle:hover{background:#f6f8ff}
+.graph-results{box-sizing:border-box;min-height:180px;max-height:min(420px,calc(100dvh - 240px),52vh);overflow:auto;overscroll-behavior:contain;padding:10px 10px 12px;scrollbar-gutter:stable both-edges;border:1px solid var(--graph-border);border-radius:18px;background:rgba(255,255,255,0.98);box-shadow:0 18px 34px rgba(15,23,42,0.14)}
+.graph-results.open{display:flex;flex-direction:column;gap:4px}
+.graph-results-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 2px 8px}
+.graph-results-filter-row{display:flex;flex-wrap:wrap;gap:6px}
+.graph-results-type-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--graph-border-strong);background:#fff;color:#5d6b7e;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 6px 14px rgba(15,23,42,0.04)}
+.graph-results-type-btn.active{color:#3156c9;border-color:#8aa8ff;background:#f6f8ff}
+.graph-results-meta{font-size:11px;color:#728198}
+.result-kind-tag{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:4px 8px;border-radius:999px;border:1px solid #d9cfbf;background:#fff;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6d7d95}
+.result-kind-tag.ask{border-color:#cad7ff;background:#f6f8ff;color:#3156c9}
+.result-kind-tag.doc{border-color:#d9cfbf;background:#fff;color:#6d7d95}
+.graph-stage{overflow:hidden;border-radius:26px}
+.graph-canvas-shell{border-radius:26px}
+.graph-note-table-wrap{overflow:auto;border:1px solid #e6ded1;border-radius:12px;background:#ffffff;box-shadow:0 8px 18px rgba(15,23,42,0.05)}
+.graph-note-table{width:100%;border-collapse:collapse;min-width:460px}
+.graph-note-table th,.graph-note-table td{padding:10px 12px;border-bottom:1px solid #ece4d8;font-size:12px;line-height:1.55;text-align:left;vertical-align:top}
+.graph-note-table th{background:#f6f1e8;color:#304258;font-size:11px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase}
+.graph-note-table tr:last-child td{border-bottom:none}
+.graph-note-figure{display:flex;flex-direction:column;gap:8px;margin:0;padding:12px;border:1px solid #e6ded1;border-radius:12px;background:#ffffff;box-shadow:0 8px 18px rgba(15,23,42,0.05)}
+.graph-note-image{display:block;max-width:100%;height:auto;border-radius:10px;border:1px solid #ece4d8;background:#fff}
+.graph-note-figure figcaption{font-size:11px;color:#66758a}
+.graph-note-image-stack{display:flex;flex-direction:column;gap:12px}
+.nav button.active svg,.nav button:hover svg,.page-nav-toggle:hover svg{color:#3156c9}
+.graph-toolbar-overlay.compact .graph-results{top:68px}
+.graph-toolbar-overlay .graph-results{left:12px;right:12px;top:70px}
+.graph-toolbar-overlay .graph-hint{margin-top:2px}
+.atlas-ask-launch{cursor:pointer;color:#3156c9}
+.atlas-ask-dock{position:absolute;left:14px;top:auto;bottom:88px;z-index:8;display:flex;flex-direction:column;align-items:flex-start;gap:10px;width:auto;max-width:calc(100% - 32px);pointer-events:auto}
+.atlas-ask-dock.open{width:var(--atlas-panel-width)}
+.atlas-ask-dock:not(.open){width:auto}
+.atlas-ask-peek{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:18px;border:1px solid var(--graph-border);background:rgba(255,255,255,0.96);box-shadow:0 18px 34px rgba(15,23,42,0.14);color:#3156c9;font-size:12px;font-weight:800;cursor:pointer;user-select:none}
+.atlas-ask-peek-glyph{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4f78ff 0%,#7f95ff 100%);color:#fff;font-weight:800;box-shadow:0 10px 24px rgba(15,23,42,0.14)}
+.atlas-ask-overlay{position:relative;display:none;flex-direction:column;width:100%;height:min(620px,calc(100% - 28px));max-height:calc(100% - 28px);min-height:0;background:rgba(255,255,255,0.96);border:1px solid var(--graph-border);border-radius:24px;box-shadow:0 18px 34px rgba(15,23,42,0.12);backdrop-filter:blur(18px);overflow:hidden}
+.atlas-ask-dock.open .atlas-ask-overlay{display:flex}
+.atlas-ask-dock.open .atlas-ask-peek{display:none}
+.atlas-ask-body{display:flex;flex:1 1 auto;flex-direction:column;gap:10px;padding:12px;min-height:0;height:100%;overflow:hidden}
+.atlas-ask-drag-bar{display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0 2px;cursor:move;user-select:none}
+.atlas-ask-drag-bar span{width:28px;height:4px;border-radius:999px;background:#d8dfe8}
+.atlas-ask-composer{position:relative;display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:22px;border:1px solid #ddcfba;background:linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(247,243,237,0.98) 100%);box-shadow:0 18px 30px rgba(94,83,63,0.12);flex:0 0 auto}
+.atlas-ask-collapse{position:absolute;top:12px;right:12px;z-index:2}
+.atlas-ask-attachments{display:flex;flex-wrap:wrap;gap:8px;padding-right:52px}
+.atlas-ask-attachments:empty{display:none}
+.atlas-ask-attachment-chip{display:inline-flex;align-items:center;gap:10px;max-width:100%;padding:8px 10px;border-radius:14px;border:1px solid #d9cfbf;background:#ffffff;color:#24344d;box-shadow:0 8px 18px rgba(15,23,42,0.06)}
+.atlas-ask-attachment-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;color:#3156c9;flex:0 0 auto}
+.atlas-ask-attachment-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.atlas-ask-attachment-copy strong{font-size:12px;font-weight:700;color:#24344d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.atlas-ask-attachment-copy span{font-size:11px;color:#6d7d95;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.atlas-ask-attachment-remove{flex:0 0 auto;width:20px;height:20px;border-radius:999px;border:1px solid #d9cfbf;background:#fff;color:#6d7d95;cursor:pointer;font-size:12px;line-height:1}
+.atlas-ask-attachment-remove:hover{color:#3156c9;border-color:#aebfe7;background:#f6f8ff}
+.atlas-ask-input-wrap{position:relative}
+.atlas-ask-input{width:100%;min-height:62px;max-height:132px;resize:none;padding:0;border:0;background:transparent;color:#24344d;font:inherit;line-height:1.6;box-sizing:border-box}
+.atlas-ask-input:focus{outline:none;box-shadow:none}
+.atlas-ask-input::placeholder{color:#7b8798}
+.atlas-ask-mention-results{position:absolute;left:0;right:0;top:calc(100% + 8px);display:none;flex-direction:column;gap:0;max-height:220px;overflow:auto;padding:8px;background:rgba(255,255,255,0.98);border:1px solid #d9cfbf;border-radius:18px;box-shadow:0 18px 30px rgba(94,83,63,0.16);z-index:3}
+.atlas-ask-mention-results.open{display:flex}
+.atlas-ask-mention-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:14px;cursor:pointer;color:#24344d}
+.atlas-ask-mention-item.active,.atlas-ask-mention-item:hover{background:#f7f9ff}
+.atlas-ask-mention-copy{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.atlas-ask-mention-copy strong{font-size:12px;color:#24344d}
+.atlas-ask-mention-copy span{font-size:11px;color:#6d7d95;line-height:1.45;word-break:break-word}
+.atlas-ask-mention-tag{flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#3156c9}
+.atlas-ask-source-summary{font-size:12px;line-height:1.5;color:#6d7d95}
+.atlas-ask-source-summary strong{color:#24344d}
+.atlas-ask-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:nowrap}
+.atlas-ask-controls{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex:1;min-width:0}
+.atlas-ask-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:999px;border:1px solid #d9cfbf;background:#fff;color:#62748a;cursor:pointer;font-size:16px;line-height:1;box-shadow:0 8px 18px rgba(15,23,42,0.06)}
+.atlas-ask-icon-btn:hover{border-color:#aebfe7;color:#3156c9;background:#f6f8ff}
+.atlas-ask-icon-btn:disabled{opacity:.45;cursor:not-allowed}
+.atlas-ask-mode-select{height:36px;min-width:0;padding:0 34px 0 12px;border-radius:999px;border:1px solid #d9cfbf;background-color:#fff;color:#24344d;font-size:12px;font-weight:700;appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7d8fa8 50%),linear-gradient(135deg,#7d8fa8 50%,transparent 50%);background-position:calc(100% - 18px) calc(50% - 2px),calc(100% - 13px) calc(50% - 2px);background-size:5px 5px,5px 5px;background-repeat:no-repeat;cursor:pointer;box-shadow:0 8px 18px rgba(15,23,42,0.04)}
+.atlas-ask-mode-select::-ms-expand{display:none}
+.atlas-ask-mode-select:focus{outline:none;border-color:#5f89ff;box-shadow:0 0 0 3px rgba(95,137,255,0.12)}
+#atlas-ask-runtime-select{flex:0 0 92px;width:92px}
+#atlas-ask-model-select{flex:0 0 136px;width:136px}
+#atlas-ask-mode-select{flex:1 1 140px;width:140px}
+#atlas-ask-info-toggle{flex:0 0 36px}
+.atlas-ask-send{display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;border-radius:999px;border:0;background:linear-gradient(135deg,#4f78ff 0%,#3156c9 100%);color:#ffffff;cursor:pointer;font-size:20px;font-weight:900;box-shadow:0 14px 24px rgba(49,86,201,0.26)}
+.atlas-ask-send:hover{filter:brightness(1.03)}
+.atlas-ask-send:disabled{opacity:.5;cursor:not-allowed}
+.atlas-ask-status{font-size:12px;line-height:1.45;color:#6d7d95}
+.atlas-ask-status.error{color:#c94f5c}
+.atlas-ask-status.busy{color:#3156c9}
+.atlas-ask-typing{display:inline-flex;align-items:center;gap:8px;color:#3156c9;font-weight:700}
+.atlas-ask-typing-text{font-size:12px;line-height:1.4}
+.atlas-ask-typing-dots{display:inline-flex;align-items:center;gap:4px}
+.atlas-ask-typing-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.25;animation:atlasAskTypingPulse 1.15s ease-in-out infinite}
+.atlas-ask-typing-dot:nth-child(2){animation-delay:.18s}
+.atlas-ask-typing-dot:nth-child(3){animation-delay:.36s}
+@keyframes atlasAskTypingPulse{
+  0%,80%,100%{opacity:.25;transform:translateY(0)}
+  40%{opacity:1;transform:translateY(-2px)}
+}
+.atlas-ask-info-popover{display:none;position:absolute;right:12px;bottom:60px;z-index:4;width:min(300px,calc(100% - 24px));max-height:min(260px,calc(100% - 84px));overflow:auto;scrollbar-gutter:stable}
+.atlas-ask-info-popover.open{display:block}
+.atlas-ask-info-card{padding:12px 14px;border-radius:18px;border:1px solid #d9cfbf;background:rgba(255,255,255,0.98);box-shadow:0 18px 30px rgba(94,83,63,0.16)}
+.atlas-ask-info-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.atlas-ask-info-title{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#61748b}
+.atlas-ask-info-close{width:26px;height:26px;border-radius:999px;border:1px solid #d9cfbf;background:#fff;color:#62748a;cursor:pointer;font-size:16px;line-height:1}
+.atlas-ask-info-close:hover{background:#f6f8ff;color:#3156c9}
+.atlas-ask-advanced-summary{font-size:11px;line-height:1.45;color:#52606f;margin-bottom:10px}
+.atlas-ask-advanced-body{display:flex;flex-direction:column;gap:7px}
+.atlas-ask-meta-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0}
+.atlas-ask-meta-label{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7b8798;flex:0 0 auto}
+.atlas-ask-meta-value{font-size:11px;line-height:1.4;color:#24344d;word-break:break-word;text-align:right;max-width:170px}
+.atlas-ask-answer{display:flex;flex-direction:column;gap:12px;flex:1 1 0;min-height:0;max-height:100%;overflow:auto;padding:0 6px 8px 0;scrollbar-gutter:stable;overscroll-behavior:contain}
+.atlas-ask-thread{display:flex;flex-direction:column;gap:12px;min-height:0}
+.atlas-ask-message{display:flex;flex-direction:column;gap:6px}
+.atlas-ask-message.user{align-items:flex-end}
+.atlas-ask-message-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7b8798}
+.atlas-ask-message-bubble{max-width:88%;padding:12px 14px;border-radius:18px;border:1px solid #d9cfbf;background:#ffffff;color:#24344d;box-shadow:0 10px 20px rgba(15,23,42,0.05);line-height:1.55;white-space:pre-wrap}
+.atlas-ask-message.user .atlas-ask-message-bubble{background:#f6f8ff;border-color:#cad7ff}
+.atlas-ask-answer-card{border:1px solid #e6ded1;border-radius:18px;background:rgba(255,255,255,0.88);box-shadow:0 10px 22px rgba(15,23,42,0.06);padding:14px;max-width:100%;overflow:auto}
+.atlas-ask-answer-card.busy{display:flex;align-items:center;min-height:76px}
+.atlas-ask-answer-card h3{margin:0 0 10px;font-size:14px;color:#24344d}
+.atlas-ask-answer-card .muted{display:block;margin-top:8px}
+.atlas-ask-answer-card ul{margin:8px 0 0 18px;padding:0}
+.atlas-ask-answer-card li{margin:0 0 8px}
+.atlas-ask-empty{padding:12px 14px;border-radius:18px;border:1px dashed #d9cfbf;background:rgba(255,255,255,0.82);color:#6d7d95;font-size:13px;line-height:1.55}
+.atlas-ask-history-list{display:flex;flex-direction:column;gap:8px}
+.atlas-ask-history-item{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:14px;border:1px solid #e6ded1;background:rgba(255,255,255,0.88);cursor:pointer;text-align:left}
+.atlas-ask-history-item:hover{background:#f7f9ff;border-color:#cad7ff}
+.atlas-ask-history-item strong{font-size:12px;color:#24344d}
+.atlas-ask-history-meta{font-size:11px;color:#6d7d95;line-height:1.4}
+.atlas-ask-history-preview{font-size:12px;color:#52606f;line-height:1.45}
+@media (max-width: 1180px){
+  .atlas-ask-dock{position:relative;left:auto;top:auto;bottom:auto;width:100%;max-width:none;margin-top:14px}
+  .atlas-ask-dock:not(.open){width:100%}
+  .atlas-ask-dock.open{width:100%}
+  .atlas-ask-overlay{height:auto;max-height:none}
+  .atlas-ask-footer{align-items:stretch;flex-wrap:wrap}
+  .atlas-ask-controls{width:100%}
+  .atlas-ask-mode-select{min-width:0;flex:1 1 160px}
+  .atlas-ask-info-popover{right:14px;left:14px;bottom:64px;width:auto;max-height:min(240px,calc(100% - 84px))}
+  .atlas-ask-drag-bar{display:none}
+  .graph-settings-dock.graph-settings-corner{position:relative;top:auto;right:auto;margin-left:auto;margin-bottom:12px}
+  .graph-settings-dock.graph-settings-corner.shifted,.graph-settings-dock.graph-settings-corner.shifted.expanded{right:auto}
+}
+.graph-footer-status{position:absolute;left:16px;right:16px;bottom:16px;z-index:5;display:block;pointer-events:none}
+.graph-footer-status .zoom-badge{pointer-events:auto}
+.graph-footer-status .graph-legend{position:static;left:auto;bottom:auto;display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;max-width:100%;pointer-events:none}
+.graph-footer-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:100%;pointer-events:auto}
+.graph-footer-row-groups{width:100%;box-sizing:border-box;flex-wrap:nowrap;overflow:hidden}
+.graph-footer-inline-tools{display:flex;align-items:center;gap:8px;min-width:0;width:100%;max-width:100%;flex:1 1 auto;overflow:hidden;pointer-events:auto}
+.graph-footer-row-controls{display:none;align-items:center;gap:8px}
+.graph-footer-control-group{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.graph-footer-control-group .legend-label{padding:6px 4px}
+.graph-footer-filter-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin:0;min-width:0;overflow:hidden;flex:0 1 auto}
+#graph-family-filters{flex:1 1 auto}
+.graph-footer-filter-row .filter-btn,.graph-footer-control-group .toggle-btn{margin:0;white-space:nowrap}
+.graph-footer-row-controls .graph-scope-row{margin:0}
+.graph-footer-row-controls.active{display:flex}
+.graph-footer-row-controls .zoom-badge{margin-left:2px}
+.graph-family-more-wrap{position:relative;display:inline-flex;align-items:center;align-self:center;flex:0 0 auto;pointer-events:auto}
+.graph-family-more-panel{display:none;position:absolute;left:0;bottom:calc(100% + 10px);z-index:12;min-width:230px;max-width:min(420px,calc(100vw - 80px));max-height:280px;overflow:auto;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--graph-border);border-radius:18px;background:rgba(255,255,255,0.98);box-shadow:0 18px 34px rgba(15,23,42,0.16);backdrop-filter:blur(18px)}
+.graph-family-more-panel.open{display:flex}
+.graph-family-more-panel .legend-pill{justify-content:flex-start;width:100%;margin:0}
+.graph-settings-dock{position:relative;display:inline-flex;align-items:center;gap:8px;pointer-events:auto}
+.graph-settings-dock.graph-settings-corner{position:absolute;top:14px;right:14px;z-index:10}
+.graph-settings-dock.graph-settings-corner.shifted{right:calc(var(--atlas-panel-width) + 28px)}
+.graph-settings-dock.graph-settings-corner.shifted.expanded{right:calc(var(--atlas-panel-expanded-width) + 28px)}
+.graph-settings-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1;white-space:nowrap}
+.graph-settings-panel{display:none;position:absolute;left:0;bottom:calc(100% + 10px);z-index:12;width:min(320px,calc(100vw - 80px));max-height:min(420px,calc(100vh - 160px));overflow:auto;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--graph-border);border-radius:20px;background:rgba(255,255,255,0.98);box-shadow:0 18px 34px rgba(15,23,42,0.16);backdrop-filter:blur(18px)}
+.graph-settings-dock.graph-settings-corner .graph-settings-panel{left:auto;right:0;top:calc(100% + 10px);bottom:auto}
+.graph-settings-panel.open{display:flex}
+.graph-settings-section{display:flex;flex-direction:column;gap:8px;padding-bottom:10px;border-bottom:1px solid #e6ded1}
+.graph-settings-section:last-child{border-bottom:none;padding-bottom:0}
+.graph-settings-title{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7a8698}
+.graph-settings-panel .graph-footer-filter-row,.graph-settings-panel .graph-footer-control-group{display:flex;flex-wrap:wrap;gap:8px;overflow:visible}
+.graph-settings-panel .zoom-badge{align-self:flex-start}
+.graph-focus-overlay.hidden{display:none}
+.graph-focus-overlay{position:absolute;top:14px;right:14px;bottom:auto;width:var(--atlas-panel-width);height:min(680px,calc(100% - 28px));max-height:calc(100% - 28px);display:flex;align-items:stretch;pointer-events:none;z-index:8;transition:width .18s ease}
+.graph-focus-overlay.compact{width:var(--atlas-panel-width)}
+.graph-focus-overlay.expanded{width:var(--atlas-panel-expanded-width)}
+.graph-focus-overlay.minimized{width:auto;height:auto;max-height:none;bottom:auto;align-items:flex-start;pointer-events:auto}
+.graph-focus-overlay.collapsed{bottom:auto;align-items:flex-start}
+.graph-focus-panel{height:100%;max-height:100%;min-height:0}
+.graph-focus-panel.collapsed{height:auto;max-height:min(220px,calc(100vh - 120px))}
+.graph-focus-drag-bar{display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 0 0;cursor:move;user-select:none}
+.graph-focus-drag-bar span{width:28px;height:4px;border-radius:999px;background:#d8dfe8}
+.graph-focus-panel.collapsed .graph-focus-header{padding:12px 14px;gap:10px;align-items:center}
+.graph-focus-panel.collapsed .graph-focus-icon{width:36px;height:36px;flex:0 0 36px;font-size:13px}
+.graph-focus-panel.collapsed .graph-focus-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.graph-focus-panel.collapsed .graph-focus-kicker{font-size:10px;line-height:1.1;margin:0}
+.graph-focus-panel.collapsed .graph-focus-doc-title{font-size:13px;line-height:1.15;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.graph-focus-panel.collapsed .graph-focus-subtle{display:none}
+.graph-focus-panel.collapsed .graph-focus-actions{gap:6px;flex-wrap:nowrap}
+.graph-focus-panel.collapsed .graph-history-btn,.graph-focus-panel.collapsed .graph-overlay-btn,.graph-focus-panel.collapsed .graph-focus-toggle,.graph-focus-panel.collapsed .graph-focus-minimize,.graph-focus-panel.collapsed .graph-focus-close{height:30px;min-width:30px;padding:0 8px;font-size:11px}
+.graph-focus-panel.minimized{background:transparent;border:none;box-shadow:none;backdrop-filter:none;overflow:visible}
+.graph-focus-peek{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:18px;border:1px solid var(--graph-border);background:rgba(255,255,255,0.96);box-shadow:0 18px 34px rgba(15,23,42,0.14);color:#3156c9;font-size:12px;font-weight:800;cursor:move;user-select:none}
+.graph-focus-peek-glyph{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;box-shadow:0 10px 24px rgba(15,23,42,0.14)}
+.graph-focus-toggle,.graph-focus-minimize{width:34px;height:34px;border-radius:999px;border:1px solid var(--graph-border);background:#fff;color:#62748a;cursor:pointer;font-size:18px;line-height:1}
+.graph-focus-toggle{font-size:15px;font-weight:800}
+.graph-note-empty{justify-content:flex-start;min-height:0;padding-top:6px}
+.graph-note-empty h2{margin-bottom:8px}
+.graph-note-empty .muted{max-width:320px}
+@media (max-width: 1180px){
+  .graph-toolbar-overlay,.graph-toolbar-overlay.compact,.graph-toolbar-overlay.minimized{position:relative;top:auto;left:auto;width:100%;max-width:none;margin-bottom:14px}
+  .graph-focus-overlay,.graph-focus-overlay.minimized{position:relative;top:auto;right:auto;bottom:auto;width:100%;height:auto;max-height:none;pointer-events:auto}
+}
+
+</style>
+</head>
+<body>
+
+<div id="panel-dash" class="panel active">
+  <div class="screen-shell">
+    <div class="header">
+      <div class="header-top">
+        <button class="page-nav-toggle" onclick="toggleSidebar()" aria-label="Toggle atlas navigation" title="Toggle atlas navigation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="7" x2="19" y2="7"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="5" y1="17" x2="19" y2="17"/>
+          </svg>
+        </button>
+        <h1>Atlas Dashboard</h1>
+      </div>
+      <p>Internal maintainer tool - generated __ATLAS_GENERATED__</p>
+    </div>
+    <div class="screen-scroll">
+      <div class="dash-grid">
+        <div class="dash-card" style="border-color:#58a6ff">
+          <span class="num" style="color:#58a6ff" id="stat-total">-</span>
+          <span class="label">Total Docs</span>
+        </div>
+        <div class="dash-card" style="border-color:#3fb950">
+          <span class="num" style="color:#3fb950" id="stat-families">-</span>
+          <span class="label">Families</span>
+        </div>
+        <div class="dash-card" style="border-color:#f0883e">
+          <span class="num" style="color:#f0883e" id="stat-edges">-</span>
+          <span class="label">Graph Edges</span>
+        </div>
+        <div class="dash-card" style="border-color:#d2a8ff">
+          <span class="num" style="color:#d2a8ff" id="stat-issues">-</span>
+          <span class="label">BK Issues</span>
+        </div>
+      </div>
+      <div id="dash-family-rows"></div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-docs" class="panel">
+  <div class="screen-shell">
+    <div class="header">
+      <div class="header-top">
+        <button class="page-nav-toggle" onclick="toggleSidebar()" aria-label="Toggle atlas navigation" title="Toggle atlas navigation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="7" x2="19" y2="7"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="5" y1="17" x2="19" y2="17"/>
+          </svg>
+        </button>
+        <h1>Atlas Docs View</h1>
+      </div>
+      <p>Search indexed markdown docs, then open structured detail without leaving the atlas shell.</p>
+    </div>
+    <div class="screen-toolbar">
+      <input class="search-box" placeholder="Search docs..." id="search" autocomplete="off">
+      <div class="filter-row" id="family-filters"></div>
+    </div>
+    <div class="screen-scroll">
+      <div id="doc-list"></div>
+    </div>
+    <div class="detail" id="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <div class="detail-header">
+        <div class="detail-icon" id="detail-icon">D</div>
+        <div class="detail-meta">
+          <span class="detail-kicker" id="detail-kicker">Document</span>
+          <div class="detail-title" id="detail-title">Document detail</div>
+          <span class="detail-subtitle" id="detail-subtitle"></span>
+        </div>
+        <div class="detail-actions">
+          <button class="detail-nav-btn" id="detail-prev" onclick="navigateDetail(-1)" aria-label="Previous document" title="Previous document">&#8592;</button>
+          <button class="detail-nav-btn" id="detail-next" onclick="navigateDetail(1)" aria-label="Next document" title="Next document">&#8594;</button>
+          <button class="detail-close" onclick="closeDetail()" aria-label="Close document detail" title="Close document detail">&times;</button>
+        </div>
+      </div>
+      <div class="detail-card" id="detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-graph" class="panel">
+  <div class="graph-shell">
+    <div class="graph-main-header">
+      <div class="header-top">
+        <button class="page-nav-toggle" onclick="toggleSidebar()" aria-label="Toggle atlas navigation" title="Toggle atlas navigation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="7" x2="19" y2="7"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="5" y1="17" x2="19" y2="17"/>
+          </svg>
+        </button>
+        <h1>Atlas Knowledge Graph</h1>
+      </div>
+      <p>Explore the live SDTK document graph, surface feature context fast, and trace specs, reviews, skills, and knowledge objects in one visual workspace.</p>
+    </div>
+    <div class="graph-stage">
+      <div class="graph-canvas-shell">
+        <div class="graph-toolbar-overlay minimized" id="graph-toolbar-overlay">
+          <div class="graph-toolbar-drag-bar" id="graph-toolbar-drag-bar" title="Drag search and filter overlay">
+            <span></span>
+          </div>
+          <button class="graph-toolbar-peek" id="graph-toolbar-peek" onclick="openGraphToolbarPeek(event)" title="Open Atlas Search">
+            <span class="graph-toolbar-peek-glyph">S</span>
+            <span>Search Atlas</span>
+          </button>
+          <div class="graph-toolbar-top">
+            <input class="search-box" placeholder="Search docs and saved asks..." id="graph-search" autocomplete="off">
+            <button class="graph-toolbar-toggle" id="graph-toolbar-toggle" onclick="toggleGraphToolbarMinimized(true)" aria-label="Close Atlas Search" title="Close Atlas Search">
+              <span id="graph-toolbar-toggle-icon">&#9662;</span>
+            </button>
+          </div>
+          <div class="graph-results" id="graph-search-results"></div>
+        </div>
+        <div class="atlas-ask-dock" id="atlas-ask-dock">
+          <button class="atlas-ask-peek" id="atlas-ask-launch" title="Open Ask Atlas">
+            <span class="atlas-ask-peek-glyph">A</span>
+            <span>Ask Atlas</span>
+          </button>
+          <div class="atlas-ask-overlay" id="atlas-ask-overlay">
+            <div class="atlas-ask-body">
+              <div class="atlas-ask-drag-bar" id="atlas-ask-drag-bar" title="Drag Ask Atlas panel">
+                <span></span>
+              </div>
+              <div class="atlas-ask-composer">
+                <button class="graph-focus-toggle atlas-ask-collapse" id="atlas-ask-toggle" title="Hide Ask Atlas" onclick="toggleAtlasAsk(false)">&#9662;</button>
+                <div class="atlas-ask-attachments" id="atlas-ask-attachments"></div>
+                <div class="atlas-ask-input-wrap">
+                  <textarea class="atlas-ask-input" id="atlas-ask-input" placeholder="Ask about the visible graph group, current focus, or attached docs..."></textarea>
+                  <div class="atlas-ask-mention-results" id="atlas-ask-mention-results"></div>
+                </div>
+                <div class="atlas-ask-source-summary" id="atlas-ask-source-summary"></div>
+                <div class="atlas-ask-footer">
+                  <div class="atlas-ask-controls">
+                    <select class="atlas-ask-mode-select" id="atlas-ask-runtime-select" onchange="setAtlasAskRuntimeAgent(this.value)" aria-label="Select runtime agent"></select>
+                    <select class="atlas-ask-mode-select" id="atlas-ask-model-select" onchange="setAtlasAskModel(this.value)" aria-label="Select model"></select>
+                    <select class="atlas-ask-mode-select" id="atlas-ask-mode-select" onchange="setAtlasAskMode(this.value)" aria-label="Select grounding mode">
+                      <option value="visible-group">Visible Group</option>
+                      <option value="current-focus">Current Focus</option>
+                      <option value="selected-docs">Selected Docs</option>
+                    </select>
+                    <button class="atlas-ask-icon-btn" id="atlas-ask-info-toggle" title="Show grounding info" onclick="toggleAtlasAskAdvanced()">i</button>
+                  </div>
+                  <button class="atlas-ask-send" id="atlas-ask-submit" onclick="submitAtlasAsk()" aria-label="Submit Atlas Ask" title="Submit Atlas Ask">&#8593;</button>
+                </div>
+                <div class="atlas-ask-info-popover" id="atlas-ask-info-popover"></div>
+                <div class="atlas-ask-status" id="atlas-ask-status">Enter sends. Shift+Enter adds a newline. Answers stay grounded to the atlas source pack you selected.</div>
+              </div>
+              <div class="atlas-ask-answer" id="atlas-ask-answer"></div>
+            </div>
+          </div>
+        </div>
+        <div class="graph-settings-dock graph-settings-corner" id="graph-settings-dock">
+          <button class="filter-btn legend-pill graph-settings-toggle" id="graph-settings-toggle" onclick="toggleGraphSettings()">Settings</button>
+          <div class="graph-settings-panel" id="graph-settings-panel">
+            <div class="graph-settings-section">
+              <span class="graph-settings-title">Links</span>
+              <div class="filter-row graph-footer-filter-row" id="graph-edge-filters"></div>
+            </div>
+            <div class="graph-settings-section">
+              <span class="graph-settings-title">Cluster</span>
+              <div class="graph-footer-control-group">
+                <button class="toggle-btn active" id="graph-group-family">Family</button>
+                <button class="toggle-btn" id="graph-group-folder">Folder</button>
+              </div>
+            </div>
+            <div class="graph-settings-section">
+              <span class="graph-settings-title">Camera</span>
+              <div class="graph-footer-control-group">
+                <button class="toggle-btn" id="graph-zoom-in">Zoom In</button>
+                <button class="toggle-btn" id="graph-zoom-out">Zoom Out</button>
+                <button class="toggle-btn" id="graph-reset-view">Reset View</button>
+                <button class="toggle-btn" id="graph-fit-visible">Fit Visible</button>
+                <button class="toggle-btn" id="graph-clear-focus">Clear Focus</button>
+                <span class="zoom-badge" id="graph-zoom-badge">100% zoom</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <canvas id="graph-canvas"></canvas>
+        <div class="graph-hover-card" id="graph-hover-card"></div>
+        <div class="graph-footer-status" id="graph-footer-status">
+          <div class="graph-legend" id="graph-legend">
+            <div class="graph-footer-row graph-footer-row-groups">
+              <div class="graph-footer-inline-tools">
+                <div class="filter-row graph-footer-filter-row" id="graph-family-filters"></div>
+                <div class="graph-family-more-wrap" id="graph-family-more-wrap"></div>
+              </div>
+            </div>
+            <div class="graph-footer-row graph-footer-row-controls">
+              <div class="graph-scope-row" id="graph-scope-row"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="graph-focus-overlay compact" id="graph-focus-overlay">
+        <div class="graph-focus-panel" id="graph-focus-panel"></div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+
+<nav class="nav" id="atlas-nav">
+  <button class="nav-toggle-rail" id="nav-toggle-rail" onclick="toggleSidebar()" aria-label="Hide atlas navigation" title="Hide atlas navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="5" y1="7" x2="19" y2="7"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <line x1="5" y1="17" x2="19" y2="17"/>
+    </svg>
+  </button>
+  <button class="nav-panel-btn active" data-panel="dash" onclick="showPanel('dash',this)" title="Atlas Dashboard" aria-label="Atlas Dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    <span class="label">Dashboard</span>
+  </button>
+  <button class="nav-panel-btn" data-panel="docs" onclick="showPanel('docs',this)" title="Atlas Docs View" aria-label="Atlas Docs View">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14,2 14,8 20,8"/>
+    </svg>
+    <span class="label">Docs</span>
+  </button>
+  <button class="nav-panel-btn" data-panel="graph" onclick="showPanel('graph',this)" title="Atlas Knowledge Graph" aria-label="Atlas Knowledge Graph">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/>
+      <circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+      <line x1="9" y1="6" x2="15" y2="6"/>
+      <line x1="9" y1="18" x2="15" y2="18"/>
+      <line x1="6" y1="9" x2="6" y2="15"/>
+      <line x1="18" y1="9" x2="18" y2="15"/>
+    </svg>
+    <span class="label">Graph</span>
+  </button>
+</nav>
+
+<script src="./mermaid.min.js"></script>
+<script>
+const INDEX = __ATLAS_INDEX_JSON__;
+const GRAPH = __ATLAS_GRAPH_JSON__;
+const FAMILY_COLORS = __ATLAS_FAMILY_COLORS_JSON__;
+const FAMILY_GLYPHS = {
+  'governance-core': 'G', 'backlog': 'B', 'review-artifact': 'R', 'knowledge-object': 'K',
+  'toolkit-skill': 'S', 'toolkit-template': 'T', 'toolkit-guide': 'I', 'docs-site-guide': 'D',
+  'root-readme': 'H', 'other-markdown': 'M',
+};
+const GRAPH_EDGE_COLORS = { references_path: 'rgba(95,137,255,0.38)', references_wiki_link: 'rgba(46,181,125,0.44)' };
+const GRAPH_FRAME_MS = 40;
+(function initDash() {
+  const docs = INDEX.documents;
+  const families = new Set(docs.map(d => d.family));
+  const issues = new Set(docs.flatMap(d => d.issues));
+  const edges = GRAPH.edges.filter(e => e.type !== 'same_family');
+  document.getElementById('stat-total').textContent = docs.length;
+  document.getElementById('stat-families').textContent = families.size;
+  document.getElementById('stat-edges').textContent = edges.length;
+  document.getElementById('stat-issues').textContent = issues.size;
+  const famCounts = {};
+  docs.forEach(d => { famCounts[d.family] = (famCounts[d.family] || 0) + 1; });
+  const rows = document.getElementById('dash-family-rows');
+  Object.entries(famCounts).sort((a,b)=>b[1]-a[1]).forEach(([fam,cnt]) => {
+    const color = FAMILY_COLORS[fam] || '#8b949e';
+    const row = document.createElement('div');
+    row.className = 'stat-row';
+    row.innerHTML = `<span class="label"><span class="dot" style="background:${color}"></span> ${fam}</span><span class="val" style="color:${color}">${cnt}</span>`;
+    rows.appendChild(row);
+  });
+})();
+
+
+function applySidebarState(collapsed) {
+  document.body.classList.toggle('nav-open', !!collapsed);
+  document.querySelectorAll('.page-nav-toggle').forEach(toggle => {
+    toggle.setAttribute('aria-label', collapsed ? 'Hide atlas navigation' : 'Show atlas navigation');
+    toggle.title = collapsed ? 'Hide atlas navigation' : 'Show atlas navigation';
+  });
+  if (document.getElementById('panel-graph').classList.contains('active')) {
+    graphState.layoutKey = null;
+    drawGraph();
+    syncAtlasAskPosition();
+    syncGraphOverlayPositions();
+  }
+}
+function toggleSidebar() {
+  const next = !document.body.classList.contains('nav-open');
+  applySidebarState(next);
+  try { localStorage.setItem(ATLAS_NAV_STORAGE_KEY, next ? '1' : '0'); } catch (error) {}
+}
+(function initSidebarState() {
+  let collapsed = true;
+  try {
+    const stored = localStorage.getItem(ATLAS_NAV_STORAGE_KEY);
+    collapsed = stored === null ? true : stored === '1';
+  } catch (error) {}
+  applySidebarState(collapsed);
+})();
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-panel-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.title = PANEL_TITLES[name] || PANEL_TITLES.dash;
+  if (name === 'graph') {
+    setTimeout(() => {
+      drawGraph();
+      syncAtlasAskPosition();
+      syncGraphOverlayPositions();
+      startGraphAnimation();
+    }, 80);
+  } else {
+    stopGraphAnimation();
+  }
+}
+
+let activeFamily = null;
+const docs = INDEX.documents;
+const famSet = [...new Set(docs.map(d => d.family))].sort();
+const familyCounts = {};
+let currentDocListIds = docs.map(doc => doc.id);
+const detailState = { currentId: null, docIds: currentDocListIds.slice() };
+docs.forEach(doc => { familyCounts[doc.family] = (familyCounts[doc.family] || 0) + 1; });
+const docById = {};
+docs.forEach(d => { docById[d.id] = d; });
+const docEdgeTypes = new Set(['references_path', 'references_wiki_link']);
+const docEdges = GRAPH.edges.filter(e => docEdgeTypes.has(e.type) && docById[e.source] && docById[e.target]);
+const nodeStats = {};
+const adjacency = {};
+docs.forEach(d => {
+  nodeStats[d.id] = { degree: 0 };
+  adjacency[d.id] = [];
+});
+docEdges.forEach(e => {
+  nodeStats[e.source].degree += 1;
+  nodeStats[e.target].degree += 1;
+  adjacency[e.source].push({ id: e.target, type: e.type, direction: 'out' });
+  adjacency[e.target].push({ id: e.source, type: e.type, direction: 'in' });
+});
+const graphState = {
+  positions: null,
+  renderedPositions: [],
+  layoutKey: null,
+  selectedId: null,
+  hoveredId: null,
+  familyFilter: null,
+  footerFamilySelection: null,
+  familyOverflowOpen: false,
+  settingsOpen: false,
+  scopeFilter: null,
+  edgeFilter: 'all',
+  groupMode: 'family',
+  motionTime: 0,
+  lastFrameTs: null,
+  animationHandle: null,
+  motionSeeds: {},
+  layoutCache: {},
+  layoutCacheOrder: [],
+  history: [],
+  historyIndex: -1,
+  searchResults: [],
+  searchResultIndex: -1,
+  searchTypeFilter: 'all',
+  overlayMode: 'compact',
+  overlayCollapsed: false,
+  fitVisibleRequested: false,
+  zoom: 1,
+  targetZoom: 1,
+  panX: 0,
+  panY: 0,
+  targetPanX: 0,
+  targetPanY: 0,
+  autoFocus: false,
+  isDragging: false,
+  didDrag: false,
+  dragLastPoint: null,
+  detailMode: 'summary',
+  manualViewport: false,
+  toolbarExpanded: false,
+  toolbarMinimized: true,
+  overlayMinimized: false,
+  toolbarPosition: null,
+  focusPosition: null,
+  suppressFocusPeekClick: false,
+  suppressToolbarPeekClick: false,
+};
+const atlasAskState = {
+  open: false,
+  mode: 'visible-group',
+  selectedDocIds: [],
+  status: 'idle',
+  answer: null,
+  error: '',
+  health: null,
+  healthLoaded: false,
+  question: '',
+  lastQuestion: '',
+  pendingQuestion: '',
+  turns: [],
+  runtimeAgent: '',
+  model: '',
+  advancedOpen: false,
+  mention: null,
+  mentionIndex: -1,
+  history: [],
+  historyLoaded: false,
+  historyError: '',
+  position: null,
+  suppressLaunchClick: false,
+};
+const PANEL_TITLES = { dash: 'Atlas Dashboard', docs: 'Atlas Docs View', graph: 'Atlas Knowledge Graph' };
+const ATLAS_NAV_STORAGE_KEY = 'sdtkAtlasNavOpen';
+const ATLAS_ASK_POSITION_STORAGE_KEY = 'sdtkAtlasAskDockPositionV3';
+const GRAPH_TOOLBAR_POSITION_STORAGE_KEY = 'sdtkAtlasGraphToolbarPositionV3';
+const GRAPH_FOCUS_POSITION_STORAGE_KEY = 'sdtkAtlasGraphFocusPosition';
+const atlasAskDragState = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+const graphOverlayDragState = { active: false, kind: '', moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+const ATLAS_ASK_RUNTIME_OPTIONS = [
+  { id: 'claude', label: 'Claude', models: ['claude-sonnet-4-6', 'claude-opus-4-1', 'claude-haiku-4-5'] },
+  { id: 'gpt', label: 'GPT', models: ['gpt-5.4', 'gpt-5.4-mini', 'gpt-5.3-codex'] },
+];
+const ATLAS_ASK_MODEL_LABELS = {
+  'claude-sonnet-4-6': 'Claude Sonnet 4.6',
+  'claude-opus-4-1': 'Claude Opus',
+  'claude-haiku-4-5': 'Claude Haiku',
+  'gpt-5.4': 'GPT-5.4',
+  'gpt-5.4-mini': 'GPT-5.4 Mini',
+  'gpt-5.3-codex': 'GPT-5.3 Codex',
+};
+function escapeHtml(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+let mermaidInitialized = false;
+let mermaidRenderSerial = 0;
+function escapeMermaidQuotedLabel(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '&quot;');
+}
+function normalizeMermaidRectLabels(line) {
+  const input = String(line || '');
+  let cursor = 0;
+  let normalized = '';
+  while (cursor < input.length) {
+    const openIndex = input.indexOf('[', cursor);
+    if (openIndex === -1) {
+      normalized += input.slice(cursor);
+      break;
+    }
+    const nextChar = input[openIndex + 1] || '';
+    let idStart = openIndex;
+    while (idStart > cursor && /[A-Za-z0-9_.:-]/.test(input[idStart - 1])) idStart -= 1;
+    const hasNodeId = idStart < openIndex && /[A-Za-z0-9_]/.test(input[openIndex - 1] || '');
+    const skip = !hasNodeId || nextChar === '[' || nextChar === '"' || nextChar === "'";
+    if (skip) {
+      normalized += input.slice(cursor, openIndex + 1);
+      cursor = openIndex + 1;
+      continue;
+    }
+    let depth = 1;
+    let closeIndex = -1;
+    let quote = null;
+    for (let index = openIndex + 1; index < input.length; index += 1) {
+      const char = input[index];
+      const prevChar = index > openIndex + 1 ? input[index - 1] : '';
+      if (quote) {
+        if (char === quote && prevChar !== '\\') quote = null;
+        continue;
+      }
+      if ((char === '"' || char === "'") && prevChar !== '\\') {
+        quote = char;
+        continue;
+      }
+      if (char === '[') {
+        depth += 1;
+        continue;
+      }
+      if (char === ']') {
+        depth -= 1;
+        if (depth === 0) {
+          closeIndex = index;
+          break;
+        }
+      }
+    }
+    if (closeIndex === -1) {
+      normalized += input.slice(cursor);
+      break;
+    }
+    const label = input.slice(openIndex + 1, closeIndex);
+    normalized += input.slice(cursor, openIndex) + `["${escapeMermaidQuotedLabel(label)}"]`;
+    cursor = closeIndex + 1;
+  }
+  return normalized;
+}
+function normalizeMermaidSource(source) {
+  return String(source || '').split('\n').map(normalizeMermaidRectLabels).join('\n');
+}
+function renderMermaidBlock(source) {
+  const encoded = encodeURIComponent(String(source || ''));
+  return `<div class="graph-note-mermaid-shell"><div class="graph-note-mermaid" data-mermaid-source="${escapeHtmlAttribute(encoded)}"><div class="graph-note-mermaid-status">Rendering Mermaid diagram...</div></div></div>`;
+}
+async function renderMermaidDiagrams(root) {
+  const scope = root || document;
+  const nodes = Array.from(scope.querySelectorAll('.graph-note-mermaid')).filter(node => !node.dataset.mermaidRendered);
+  if (!nodes.length) return;
+  if (typeof mermaid === 'undefined') {
+    nodes.forEach(node => {
+      node.dataset.mermaidRendered = 'error';
+      node.innerHTML = '<div class="graph-note-mermaid-status error">Mermaid runtime is unavailable in this atlas viewer.</div>';
+    });
+    return;
+  }
+  if (!mermaidInitialized) {
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'neutral', fontFamily: 'inherit' });
+    mermaidInitialized = true;
+  }
+  const renderSerial = ++mermaidRenderSerial;
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index];
+    const encoded = node.getAttribute('data-mermaid-source') || '';
+    const source = decodeURIComponent(encoded);
+    const normalizedSource = normalizeMermaidSource(source);
+    try {
+      const result = await mermaid.render(`sdtk-atlas-mermaid-${renderSerial}-${index}`, normalizedSource);
+      const svg = typeof result === 'string' ? result : result.svg;
+      node.innerHTML = svg;
+      if (result && typeof result.bindFunctions === 'function') result.bindFunctions(node);
+      node.dataset.mermaidRendered = '1';
+    } catch (error) {
+      node.dataset.mermaidRendered = 'error';
+      node.innerHTML = `<pre><code>${escapeHtml(source)}</code></pre><div class="graph-note-mermaid-status error">Mermaid render failed after atlas normalization: ${escapeHtml(error && error.message ? error.message : String(error))}</div>`;
+    }
+  }
+}
+function scheduleMermaidRender(root) {
+  if (!root) return;
+  requestAnimationFrame(() => {
+    renderMermaidDiagrams(root);
+  });
+}
+function normalizeEmbeddedAssetPath(rawPath) {
+    let value = String(rawPath || '').trim();
+    if (!value) return '';
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1).trim();
+    }
+    if (value.startsWith('<') && value.endsWith('>')) {
+      value = value.slice(1, -1).trim();
+    }
+    const titleMatch = value.match(/^(\S+)\s+(?:"[^"]*"|'[^']*')$/);
+    if (titleMatch) {
+      value = titleMatch[1].trim();
+    }
+    return value;
+  }
+  function resolveEmbeddedAssetPath(rawPath) {
+    const value = normalizeEmbeddedAssetPath(rawPath);
+    if (!value) return '';
+    if (/^(https?:|data:|file:|#)/i.test(value)) return value;
+    return `../../../../${value.replace(/^\.\//, '').replace(/\\/g, '/')}`;
+  }
+function extractHtmlAttribute(rawHtml, name) {
+  const match = String(rawHtml || '').match(new RegExp(`${name}\s*=\s*["']([^"']+)["']`, 'i'));
+  return match ? match[1] : '';
+}
+function renderMarkdownImage(altText, assetPath) {
+  const resolvedPath = resolveEmbeddedAssetPath(assetPath);
+  const safeAlt = escapeHtml(altText || 'Embedded SDTK asset');
+  const safePath = escapeHtml(resolvedPath);
+  return `<figure class="graph-note-figure"><img class="graph-note-image" src="${safePath}" alt="${safeAlt}" loading="lazy">${safeAlt ? `<figcaption>${safeAlt}</figcaption>` : ''}</figure>`;
+}
+function renderHtmlImageTag(rawHtml) {
+  const assetPath = extractHtmlAttribute(rawHtml, 'src');
+  const altText = extractHtmlAttribute(rawHtml, 'alt') || extractHtmlAttribute(rawHtml, 'title');
+  if (!assetPath) return `<pre><code>${escapeHtml(rawHtml)}</code></pre>`;
+  return renderMarkdownImage(altText, assetPath);
+}
+function formatInlineMarkdown(value) {
+  let html = escapeHtml(value);
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, assetPath) => renderMarkdownImage(alt, assetPath));
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<span class="wiki-link">$1</span>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  return html;
+}
+function renderHtmlTable(rawHtml) {
+  try {
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(`<body>${rawHtml}</body>`, 'text/html');
+    const table = parsed.querySelector('table');
+    if (!table) throw new Error('missing table');
+    const allRows = [...table.querySelectorAll('tr')];
+    if (!allRows.length) return `<pre><code>${escapeHtml(rawHtml)}</code></pre>`;
+    const explicitHead = table.querySelector('thead tr');
+    let headers = [];
+    let rows = [];
+    if (explicitHead) {
+      headers = [...explicitHead.children].map(cell => (cell.textContent || '').trim());
+      rows = [...table.querySelectorAll('tbody tr')].map(row => [...row.children].map(cell => (cell.textContent || '').trim()));
+    } else {
+      const firstCells = [...allRows[0].children];
+      const firstIsHeader = firstCells.some(cell => cell.tagName.toLowerCase() === 'th');
+      if (firstIsHeader) {
+        headers = firstCells.map(cell => (cell.textContent || '').trim());
+        rows = allRows.slice(1).map(row => [...row.children].map(cell => (cell.textContent || '').trim()));
+      } else {
+        headers = firstCells.map((_, index) => `Column ${index + 1}`);
+        rows = allRows.map(row => [...row.children].map(cell => (cell.textContent || '').trim()));
+      }
+    }
+    return renderMarkdownTable(headers, rows);
+  } catch (_error) {
+    return `<pre><code>${escapeHtml(rawHtml)}</code></pre>`;
+  }
+}
+function stashSupportedHtmlEmbeds(markdown) {
+  const htmlBlocks = [];
+  const stash = (html) => {
+    const token = `__ATLAS_HTML_BLOCK_${htmlBlocks.length}__`;
+    htmlBlocks.push({ token, html });
+    return `\n${token}\n`;
+  };
+  let source = String(markdown || '');
+  source = source.replace(/<table\b[\s\S]*?<\/table>/gi, (rawHtml) => stash(renderHtmlTable(rawHtml)));
+  source = source.replace(/<p\b[^>]*>\s*((?:<a\b[^>]*>\s*)?<img\b[^>]*>(?:\s*<\/a>)?\s*)+<\/p>/gi, (rawHtml) => {
+    const figures = [...rawHtml.matchAll(/<img\b[^>]*>/gi)].map(match => renderHtmlImageTag(match[0])).join('');
+    return figures ? stash(`<div class="graph-note-image-stack">${figures}</div>`) : rawHtml;
+  });
+  source = source.replace(/<img\b[^>]*>/gi, (rawHtml) => stash(renderHtmlImageTag(rawHtml)));
+  return { source, htmlBlocks };
+}
+function folderGroupForDoc(doc) {
+  const parts = doc.id.split('/');
+  if (parts.length <= 1) return 'repo-root';
+  return parts.slice(0, Math.min(parts.length, 2)).join('/');
+}
+function hashString(value) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+function sortNeighbors(items) {
+  return [...items].sort((a, b) => {
+    const degreeDiff = (nodeStats[b.id]?.degree || 0) - (nodeStats[a.id]?.degree || 0);
+    if (degreeDiff !== 0) return degreeDiff;
+    return (docById[a.id]?.title || a.id).localeCompare(docById[b.id]?.title || b.id);
+  });
+}
+function getVisibleDocs() {
+  let visible = graphState.familyFilter ? docs.filter(doc => doc.family === graphState.familyFilter) : docs;
+  if (graphState.scopeFilter && graphState.scopeFilter.docIds) {
+    visible = visible.filter(doc => graphState.scopeFilter.docIds.has(doc.id));
+  }
+  return visible;
+}
+function getVisibleDocIds() {
+  return new Set(getVisibleDocs().map(doc => doc.id));
+}
+function getVisibleDocEdges(visibleIds) {
+  return docEdges.filter(edge => {
+    if (!visibleIds.has(edge.source) || !visibleIds.has(edge.target)) return false;
+    return graphState.edgeFilter === 'all' || edge.type === graphState.edgeFilter;
+  });
+}
+function normalizeGraphFocus(visibleIds) {
+  if (graphState.selectedId && !visibleIds.has(graphState.selectedId)) graphState.selectedId = null;
+  if (graphState.hoveredId && !visibleIds.has(graphState.hoveredId)) graphState.hoveredId = null;
+  if (!graphState.selectedId) graphState.detailMode = 'summary';
+}
+function getGraphFocusId() {
+  return graphState.selectedId;
+}
+function getNeighborIds(id, visibleEdges) {
+  const ids = new Set();
+  visibleEdges.forEach(edge => {
+    if (edge.source === id) ids.add(edge.target);
+    if (edge.target === id) ids.add(edge.source);
+  });
+  return ids;
+}
+function updateZoomBadge() {
+  const badge = document.getElementById('graph-zoom-badge');
+  if (!badge) return;
+  badge.textContent = `${Math.round(graphState.zoom * 100)}% zoom`;
+}
+function getScopeDocIds(kind, value) {
+  return docs.filter(doc => {
+    if (kind === 'issue') return doc.issues.includes(value);
+    if (kind === 'knowledge') return doc.knowledge_ids.includes(value);
+    if (kind === 'skill') return doc.skill_refs.includes(value);
+    if (kind === 'template') return doc.template_refs.includes(value);
+    if (kind === 'release') return doc.release_refs.includes(value);
+    if (kind === 'lane') return doc.lane_refs.includes(value);
+    return false;
+  }).map(doc => doc.id);
+}
+function getScopeLabel(kind) {
+  return ({ issue: 'Issue', knowledge: 'Knowledge', skill: 'Skill', template: 'Template', release: 'Release', lane: 'Lane' }[kind]) || 'Scope';
+}
+function getScopeValueLabel(kind, value) {
+  if (kind === 'template') {
+    const parts = value.split('/');
+    return parts[parts.length - 1] || value;
+  }
+  return value;
+}
+function pushGraphHistory(id) {
+  if (!id) return;
+  const current = graphState.history[graphState.historyIndex];
+  if (current === id) return;
+  graphState.history = graphState.history.slice(0, graphState.historyIndex + 1);
+  graphState.history.push(id);
+  graphState.historyIndex = graphState.history.length - 1;
+}
+function jumpGraphHistory(index) {
+  if (index < 0 || index >= graphState.history.length) return;
+  graphState.historyIndex = index;
+  setGraphSelection(graphState.history[index], { pushHistory: false, clearSearch: false, detailMode: 'summary', animate: true });
+}
+function renderGraphHistoryStrip() {
+  if (!graphState.history.length) return '';
+  const start = Math.max(0, graphState.history.length - 5);
+  const chips = graphState.history.slice(start).map((id, offset) => {
+    const index = start + offset;
+    const doc = docById[id];
+    const label = doc ? (doc.title || doc.id) : id;
+    const active = index === graphState.historyIndex;
+    return `<button class="graph-history-chip${active ? ' active' : ''}" onclick="jumpGraphHistory(${index})"><small>${index + 1}</small><span>${escapeHtml(label)}</span></button>`;
+  }).join('');
+  return `<div class="graph-chip-section"><div class="graph-chip-label">Recent Focus</div><div class="graph-history-strip">${chips}</div></div>`;
+}
+function syncGraphOverlayMode() {
+  const overlay = document.getElementById('graph-focus-overlay');
+  if (!overlay) return;
+  overlay.classList.toggle('compact', graphState.overlayMode === 'compact');
+  overlay.classList.toggle('expanded', graphState.overlayMode === 'expanded');
+  overlay.classList.toggle('collapsed', !!graphState.overlayCollapsed);
+  overlay.classList.toggle('minimized', !!graphState.overlayMinimized);
+}
+function readGraphOverlayPosition(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Number.isFinite(parsed.x) || !Number.isFinite(parsed.y)) return null;
+    return { x: parsed.x, y: parsed.y };
+  } catch (error) {
+    return null;
+  }
+}
+function saveGraphOverlayPosition(storageKey, position) {
+  try {
+    if (!position) localStorage.removeItem(storageKey);
+    else localStorage.setItem(storageKey, JSON.stringify(position));
+  } catch (error) {}
+}
+graphState.toolbarPosition = readGraphOverlayPosition(GRAPH_TOOLBAR_POSITION_STORAGE_KEY);
+graphState.focusPosition = readGraphOverlayPosition(GRAPH_FOCUS_POSITION_STORAGE_KEY);
+function getGraphOverlayElements(kind) {
+  const overlay = document.getElementById(kind === 'toolbar' ? 'graph-toolbar-overlay' : 'graph-focus-overlay');
+  const shell = document.querySelector('#panel-graph .graph-canvas-shell');
+  if (!overlay || !shell || window.innerWidth <= 1180) return null;
+  return { overlay, shell };
+}
+function getGraphOverlayStorageKey(kind) {
+  return kind === 'toolbar' ? GRAPH_TOOLBAR_POSITION_STORAGE_KEY : GRAPH_FOCUS_POSITION_STORAGE_KEY;
+}
+function getGraphOverlayStatePosition(kind) {
+  return kind === 'toolbar' ? graphState.toolbarPosition : graphState.focusPosition;
+}
+function setGraphOverlayStatePosition(kind, position) {
+  if (kind === 'toolbar') graphState.toolbarPosition = position;
+  else graphState.focusPosition = position;
+}
+function clampGraphOverlayPosition(position, overlay, shell) {
+  const margin = 14;
+  const maxX = Math.max(margin, shell.clientWidth - overlay.offsetWidth - margin);
+  const maxY = Math.max(margin, shell.clientHeight - overlay.offsetHeight - margin);
+  return {
+    x: Math.round(Math.min(Math.max(margin, position.x), maxX)),
+    y: Math.round(Math.min(Math.max(margin, position.y), maxY)),
+  };
+}
+function applyGraphOverlayPosition(kind, position, overlay) {
+  if (!position) {
+    overlay.style.left = '';
+    overlay.style.top = '';
+    overlay.style.right = '';
+    overlay.style.bottom = '';
+    return;
+  }
+  overlay.style.left = `${position.x}px`;
+  overlay.style.top = `${position.y}px`;
+  overlay.style.right = 'auto';
+  overlay.style.bottom = 'auto';
+}
+function syncGraphOverlayPosition(kind) {
+  const elements = getGraphOverlayElements(kind);
+  const overlay = document.getElementById(kind === 'toolbar' ? 'graph-toolbar-overlay' : 'graph-focus-overlay');
+  if (!overlay) return;
+  if (!elements) {
+    applyGraphOverlayPosition(kind, null, overlay);
+    return;
+  }
+  if (kind === 'toolbar' && graphState.toolbarMinimized) {
+    applyGraphOverlayPosition(kind, null, elements.overlay);
+    return;
+  }
+  const position = getGraphOverlayStatePosition(kind);
+  if (!position) {
+    applyGraphOverlayPosition(kind, null, elements.overlay);
+    return;
+  }
+  const next = clampGraphOverlayPosition(position, elements.overlay, elements.shell);
+  setGraphOverlayStatePosition(kind, next);
+  applyGraphOverlayPosition(kind, next, elements.overlay);
+}
+function syncGraphToolbarPosition() {
+  syncGraphOverlayPosition('toolbar');
+}
+function syncGraphFocusPosition() {
+  syncGraphOverlayPosition('focus');
+}
+function syncGraphOverlayPositions() {
+  syncGraphToolbarPosition();
+  syncGraphFocusPosition();
+}
+function dockGraphOverlay(kind) {
+  setGraphOverlayStatePosition(kind, null);
+  saveGraphOverlayPosition(getGraphOverlayStorageKey(kind), null);
+  syncGraphOverlayPosition(kind);
+  if (document.getElementById('panel-graph').classList.contains('active')) {
+    graphState.layoutKey = null;
+    drawGraph();
+  }
+}
+function startGraphOverlayDrag(kind, event) {
+  if (event.button !== 0) return;
+  const elements = getGraphOverlayElements(kind);
+  if (!elements) return;
+  const overlayRect = elements.overlay.getBoundingClientRect();
+  const shellRect = elements.shell.getBoundingClientRect();
+  graphOverlayDragState.active = true;
+  graphOverlayDragState.kind = kind;
+  graphOverlayDragState.moved = false;
+  graphOverlayDragState.startX = event.clientX;
+  graphOverlayDragState.startY = event.clientY;
+  graphOverlayDragState.originX = overlayRect.left - shellRect.left;
+  graphOverlayDragState.originY = overlayRect.top - shellRect.top;
+  if (kind === 'focus') graphState.suppressFocusPeekClick = false;
+  if (kind === 'toolbar') graphState.suppressToolbarPeekClick = false;
+  event.preventDefault();
+}
+function dragGraphOverlay(event) {
+  if (!graphOverlayDragState.active) return;
+  const elements = getGraphOverlayElements(graphOverlayDragState.kind);
+  if (!elements) return;
+  const dx = event.clientX - graphOverlayDragState.startX;
+  const dy = event.clientY - graphOverlayDragState.startY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) graphOverlayDragState.moved = true;
+  const next = clampGraphOverlayPosition(
+    { x: graphOverlayDragState.originX + dx, y: graphOverlayDragState.originY + dy },
+    elements.overlay,
+    elements.shell,
+  );
+  setGraphOverlayStatePosition(graphOverlayDragState.kind, next);
+  applyGraphOverlayPosition(graphOverlayDragState.kind, next, elements.overlay);
+  event.preventDefault();
+}
+function stopGraphOverlayDrag() {
+  if (!graphOverlayDragState.active) return;
+  const kind = graphOverlayDragState.kind;
+  graphOverlayDragState.active = false;
+  if (kind === 'focus') graphState.suppressFocusPeekClick = graphOverlayDragState.moved;
+  if (kind === 'toolbar') graphState.suppressToolbarPeekClick = graphOverlayDragState.moved;
+  saveGraphOverlayPosition(getGraphOverlayStorageKey(kind), getGraphOverlayStatePosition(kind));
+  if (document.getElementById('panel-graph').classList.contains('active')) {
+    graphState.layoutKey = null;
+    drawGraph();
+  }
+}
+function syncGraphToolbar() {
+  const overlay = document.getElementById('graph-toolbar-overlay');
+  const icon = document.getElementById('graph-toolbar-toggle-icon');
+  const toggle = document.getElementById('graph-toolbar-toggle');
+  if (!overlay) return;
+  overlay.classList.toggle('minimized', !!graphState.toolbarMinimized);
+  overlay.classList.toggle('compact', !graphState.toolbarExpanded && !graphState.toolbarMinimized);
+  overlay.classList.toggle('expanded', !!graphState.toolbarExpanded && !graphState.toolbarMinimized);
+  if (icon) icon.innerHTML = graphState.toolbarExpanded ? '&#9652;' : '&#9662;';
+  if (toggle) {
+    toggle.setAttribute('aria-label', graphState.toolbarExpanded ? 'Collapse graph filters' : 'Expand graph filters');
+    toggle.title = graphState.toolbarExpanded ? 'Collapse graph filters' : 'Expand graph filters';
+  }
+  requestAnimationFrame(syncGraphToolbarPosition);
+}
+function toggleGraphToolbar() {
+  toggleGraphToolbarMinimized(true);
+}
+function toggleGraphToolbarMinimized(forceState) {
+  graphState.toolbarMinimized = typeof forceState === 'boolean' ? forceState : !graphState.toolbarMinimized;
+  if (graphState.toolbarMinimized) graphState.toolbarExpanded = false;
+  syncGraphToolbar();
+  if (document.getElementById('panel-graph').classList.contains('active')) drawGraph();
+}
+function openGraphToolbarPeek(event) {
+  if (graphState.suppressToolbarPeekClick) {
+    graphState.suppressToolbarPeekClick = false;
+    if (event) event.preventDefault();
+    return;
+  }
+  toggleGraphToolbarMinimized(false);
+}
+function getAtlasAskModeLabel(mode) {
+  return ({ 'current-focus': 'Current Focus', 'visible-group': 'Visible Group', 'selected-docs': 'Selected Docs' }[mode]) || 'Ask Atlas';
+}
+function getAtlasAskVisibleDocIds() {
+  return getVisibleDocs().map(doc => doc.id);
+}
+function readAtlasAskPosition() {
+  try {
+    const raw = localStorage.getItem(ATLAS_ASK_POSITION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Number.isFinite(parsed.x) || !Number.isFinite(parsed.y)) return null;
+    return { x: parsed.x, y: parsed.y };
+  } catch (error) {
+    return null;
+  }
+}
+function saveAtlasAskPosition() {
+  if (!atlasAskState.position) return;
+  try { localStorage.setItem(ATLAS_ASK_POSITION_STORAGE_KEY, JSON.stringify(atlasAskState.position)); } catch (error) {}
+}
+function getAtlasAskDockElements() {
+  const panel = document.getElementById('panel-graph');
+  const dock = document.getElementById('atlas-ask-dock');
+  const shell = document.querySelector('#panel-graph .graph-canvas-shell');
+  if (!panel || !panel.classList.contains('active') || !dock || !shell || window.innerWidth <= 1180 || !shell.clientWidth || !shell.clientHeight) return null;
+  return { dock, shell };
+}
+function getDefaultAtlasAskPosition(dock, shell) {
+  const margin = 14;
+  return {
+    x: margin,
+    y: Math.max(margin, shell.clientHeight - dock.offsetHeight - margin),
+  };
+}
+function clampAtlasAskPosition(position, dock, shell) {
+  const margin = 14;
+  const maxX = Math.max(margin, shell.clientWidth - dock.offsetWidth - margin);
+  const maxY = Math.max(margin, shell.clientHeight - dock.offsetHeight - margin);
+  return {
+    x: Math.round(Math.min(Math.max(margin, position.x), maxX)),
+    y: Math.round(Math.min(Math.max(margin, position.y), maxY)),
+  };
+}
+function applyAtlasAskPosition(position, dock) {
+  dock.style.left = `${position.x}px`;
+  dock.style.top = `${position.y}px`;
+  dock.style.bottom = 'auto';
+}
+function syncAtlasAskPosition() {
+  const elements = getAtlasAskDockElements();
+  const dock = document.getElementById('atlas-ask-dock');
+  if (!dock) return;
+  if (!elements || !atlasAskState.open) {
+    dock.style.left = '';
+    dock.style.top = '';
+    dock.style.bottom = '';
+    return;
+  }
+  const seed = atlasAskState.position || readAtlasAskPosition() || getDefaultAtlasAskPosition(elements.dock, elements.shell);
+  const next = clampAtlasAskPosition(seed, elements.dock, elements.shell);
+  atlasAskState.position = next;
+  applyAtlasAskPosition(next, elements.dock);
+}
+function startAtlasAskDrag(event) {
+  if (event.button !== 0) return;
+  const elements = getAtlasAskDockElements();
+  if (!elements) return;
+  syncAtlasAskPosition();
+  atlasAskDragState.active = true;
+  atlasAskDragState.moved = false;
+  atlasAskDragState.startX = event.clientX;
+  atlasAskDragState.startY = event.clientY;
+  atlasAskDragState.originX = atlasAskState.position ? atlasAskState.position.x : 14;
+  atlasAskDragState.originY = atlasAskState.position ? atlasAskState.position.y : 14;
+  event.preventDefault();
+}
+function dragAtlasAsk(event) {
+  if (!atlasAskDragState.active) return;
+  const elements = getAtlasAskDockElements();
+  if (!elements) return;
+  const dx = event.clientX - atlasAskDragState.startX;
+  const dy = event.clientY - atlasAskDragState.startY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) atlasAskDragState.moved = true;
+  atlasAskState.position = clampAtlasAskPosition(
+    { x: atlasAskDragState.originX + dx, y: atlasAskDragState.originY + dy },
+    elements.dock,
+    elements.shell,
+  );
+  applyAtlasAskPosition(atlasAskState.position, elements.dock);
+  event.preventDefault();
+}
+function stopAtlasAskDrag() {
+  if (!atlasAskDragState.active) return;
+  atlasAskDragState.active = false;
+  atlasAskState.suppressLaunchClick = atlasAskDragState.moved;
+  if (atlasAskState.position) saveAtlasAskPosition();
+}
+async function ensureAtlasAskHealth() {
+  if (atlasAskState.healthLoaded) return;
+  try {
+    const response = await fetch('/api/health');
+    const payload = await response.json();
+    atlasAskState.health = payload;
+    syncAtlasAskRuntimeSelection(atlasAskState.runtimeAgent || payload.runtime_agent || '', atlasAskState.model || payload.model || '');
+  } catch (error) {
+    atlasAskState.health = { ok: false, error: error && error.message ? error.message : String(error) };
+    syncAtlasAskRuntimeSelection(atlasAskState.runtimeAgent || 'claude', atlasAskState.model || '');
+  }
+  atlasAskState.healthLoaded = true;
+  renderAtlasAsk();
+}
+async function ensureAtlasAskHistory(forceReload = false) {
+  if (atlasAskState.historyLoaded && !forceReload) return;
+  try {
+    const response = await fetch('/api/atlas-ask-history');
+    const payload = await response.json();
+    atlasAskState.history = Array.isArray(payload.items) ? payload.items : [];
+    atlasAskState.historyError = payload.ok === false ? (payload.error || 'Atlas ask history is unavailable.') : '';
+  } catch (error) {
+    atlasAskState.history = [];
+    atlasAskState.historyError = error && error.message ? error.message : String(error);
+  }
+  atlasAskState.historyLoaded = true;
+  renderAtlasAsk();
+}
+function prependAtlasAskHistory(entry) {
+  if (!entry || !entry.id) return;
+  atlasAskState.history = [entry].concat((atlasAskState.history || []).filter(item => item && item.id !== entry.id)).slice(0, 12);
+  atlasAskState.historyLoaded = true;
+}
+function loadAtlasAskHistoryItem(id) {
+  const item = (atlasAskState.history || []).find(entry => entry && entry.id === id);
+  if (!item) return;
+  atlasAskState.question = '';
+  atlasAskState.pendingQuestion = '';
+  atlasAskState.lastQuestion = item.question || '';
+  atlasAskState.mode = item.mode || 'visible-group';
+  atlasAskState.selectedDocIds = Array.isArray(item.selected_doc_ids) ? [...item.selected_doc_ids] : [];
+  atlasAskState.answer = {
+    question: item.question || '',
+    answer_markdown: item.answer_markdown || '',
+    citations: Array.isArray(item.citations) ? item.citations : [],
+    confidence: item.confidence || 'low',
+    disclaimer: item.disclaimer || '',
+    context: {
+      source_count: Array.isArray(item.source_paths) ? item.source_paths.length : 0,
+      source_paths: Array.isArray(item.source_paths) ? item.source_paths : [],
+      truncated: { truncated: false },
+    },
+  };
+  atlasAskState.turns = [{
+    question: item.question || '',
+    answer_markdown: item.answer_markdown || '',
+    citations: Array.isArray(item.citations) ? item.citations : [],
+    confidence: item.confidence || 'low',
+    disclaimer: item.disclaimer || '',
+    context: atlasAskState.answer.context,
+  }];
+  atlasAskState.error = '';
+  atlasAskState.status = 'idle';
+  atlasAskState.open = true;
+  ensureAtlasAskHealth();
+  renderAtlasAsk();
+}
+function renderAtlasAskHistoryHtml() {
+  if (atlasAskState.historyError) {
+    return `<div class="atlas-ask-answer-card"><h3>Recent Asks</h3><p class="muted">History is unavailable: ${escapeHtml(atlasAskState.historyError)}</p></div>`;
+  }
+  if (!atlasAskState.historyLoaded) {
+    return '<div class="atlas-ask-answer-card"><h3>Recent Asks</h3><p class="muted">Loading local Atlas Ask history...</p></div>';
+  }
+  if (!atlasAskState.history.length) {
+    return '<div class="atlas-ask-answer-card"><h3>Recent Asks</h3><p class="muted">No saved asks yet. Completed asks will appear here after the first grounded response is written locally.</p></div>';
+  }
+  const items = atlasAskState.history.slice(0, 8).map(item => {
+    const metaBits = [item.timestamp || '', getAtlasAskModeLabel(item.mode || 'current-focus')].filter(Boolean).join(' | ');
+    const preview = escapeHtml(item.answer_preview || item.answer_markdown || 'Saved grounded answer.');
+    return `<button class="atlas-ask-history-item" onclick="loadAtlasAskHistoryItem('${item.id}')"><strong>${escapeHtml(item.question || 'Saved ask')}</strong><span class="atlas-ask-history-meta">${escapeHtml(metaBits)}</span><span class="atlas-ask-history-preview">${preview}</span></button>`;
+  }).join('');
+  return `<div class="atlas-ask-answer-card"><h3>Recent Asks</h3><div class="atlas-ask-history-list">${items}</div></div>`;
+}
+function toggleAtlasAsk(forceState) {
+  atlasAskState.open = typeof forceState === 'boolean' ? forceState : !atlasAskState.open;
+  if (!atlasAskState.open) atlasAskState.advancedOpen = false;
+  renderAtlasAsk();
+  if (atlasAskState.open) ensureAtlasAskHealth();
+}
+function toggleAtlasAskAdvanced(forceState) {
+  atlasAskState.advancedOpen = typeof forceState === 'boolean' ? forceState : !atlasAskState.advancedOpen;
+  renderAtlasAsk();
+}
+function getAtlasAskRuntimeOptions() {
+  if (atlasAskState.health && Array.isArray(atlasAskState.health.runtime_options) && atlasAskState.health.runtime_options.length) {
+    return atlasAskState.health.runtime_options.map(option => ({
+      id: option.id,
+      label: option.label || option.id,
+      models: Array.isArray(option.models) ? option.models : [],
+    }));
+  }
+  return ATLAS_ASK_RUNTIME_OPTIONS;
+}
+function getAtlasAskRuntimeLabel(runtimeAgent) {
+  const option = getAtlasAskRuntimeOptions().find(item => item.id === runtimeAgent);
+  return option ? option.label : String(runtimeAgent || '').toUpperCase();
+}
+function getAtlasAskModelOptions(runtimeAgent) {
+  const option = getAtlasAskRuntimeOptions().find(item => item.id === runtimeAgent);
+  if (option && Array.isArray(option.models) && option.models.length) return option.models;
+  const fallback = ATLAS_ASK_RUNTIME_OPTIONS.find(item => item.id === runtimeAgent) || ATLAS_ASK_RUNTIME_OPTIONS[0];
+  return fallback ? fallback.models : [];
+}
+function getAtlasAskModelLabel(model) {
+  return ATLAS_ASK_MODEL_LABELS[model] || model || 'Default';
+}
+function syncAtlasAskRuntimeSelection(preferredAgent, preferredModel) {
+  const options = getAtlasAskRuntimeOptions();
+  const fallbackAgent = options.length ? options[0].id : 'claude';
+  const nextAgent = options.some(option => option.id === preferredAgent) ? preferredAgent : fallbackAgent;
+  const modelOptions = getAtlasAskModelOptions(nextAgent);
+  const fallbackModel = modelOptions.length ? modelOptions[0] : '';
+  atlasAskState.runtimeAgent = nextAgent;
+  atlasAskState.model = modelOptions.includes(preferredModel) ? preferredModel : fallbackModel;
+}
+function setAtlasAskRuntimeAgent(runtimeAgent) {
+  syncAtlasAskRuntimeSelection(runtimeAgent, '');
+  renderAtlasAsk();
+}
+function setAtlasAskModel(model) {
+  const allowed = getAtlasAskModelOptions(atlasAskState.runtimeAgent);
+  atlasAskState.model = allowed.includes(model) ? model : (allowed[0] || '');
+  renderAtlasAsk();
+}
+function setAtlasAskMode(mode) {
+  atlasAskState.mode = mode;
+  renderAtlasAsk();
+}
+function addAtlasAskSource(id) {
+  if (!id || !docById[id]) return;
+  if (!atlasAskState.selectedDocIds.includes(id)) atlasAskState.selectedDocIds.push(id);
+  atlasAskState.open = true;
+  atlasAskState.error = '';
+  renderAtlasAsk();
+}
+function removeAtlasAskSource(id) {
+  atlasAskState.selectedDocIds = atlasAskState.selectedDocIds.filter(value => value !== id);
+  renderAtlasAsk();
+}
+function addCurrentFocusToAtlasAsk() {
+  const focusId = getGraphFocusId();
+  if (!focusId) {
+    atlasAskState.error = 'Select or hover a graph document first, then add it as an ask source.';
+    atlasAskState.open = true;
+    renderAtlasAsk();
+    return;
+  }
+  addAtlasAskSource(focusId);
+}
+function clearAtlasAskSources() {
+  atlasAskState.selectedDocIds = [];
+  atlasAskState.error = '';
+  renderAtlasAsk();
+}
+function getAtlasAskSourceSummaryHtml() {
+  const visibleCount = getAtlasAskVisibleDocIds().length;
+  const selectedCount = atlasAskState.selectedDocIds.length;
+  const focusId = getGraphFocusId();
+  const focusLabel = focusId ? ((docById[focusId] && (docById[focusId].title || focusId)) || focusId) : 'None';
+  if (atlasAskState.mode === 'current-focus') {
+    if (focusId) {
+      return `<strong>Grounding:</strong> Current focus source. <strong>Focus:</strong> ${escapeHtml(focusLabel)}. <strong>Visible group:</strong> ${visibleCount} docs.`;
+    }
+    return `<strong>Grounding:</strong> Current focus source. Select a graph note to anchor this ask. <strong>Visible group:</strong> ${visibleCount} docs.`;
+  }
+  if (atlasAskState.mode === 'visible-group') {
+    return `<strong>Grounding:</strong> Visible graph group. <strong>Visible docs:</strong> ${visibleCount}.${selectedCount ? ` <strong>Explicit docs:</strong> ${selectedCount}.` : ''}`;
+  }
+  return `<strong>Grounding:</strong> Explicit source pack. <strong>Selected docs:</strong> ${selectedCount}.${selectedCount ? '' : ' Use graph search results or @mention docs before asking.'}`;
+}
+function getAtlasAskAdvancedSummaryText() {
+  const bits = [];
+  if (atlasAskState.runtimeAgent) bits.push(`${getAtlasAskRuntimeLabel(atlasAskState.runtimeAgent)} / ${getAtlasAskModelLabel(atlasAskState.model)}`);
+  bits.push(`${getAtlasAskVisibleDocIds().length} visible docs`);
+  if (atlasAskState.answer && atlasAskState.answer.context && typeof atlasAskState.answer.context.source_count === 'number') bits.push(`${atlasAskState.answer.context.source_count} sources used`);
+  if (atlasAskState.answer && atlasAskState.answer.context && atlasAskState.answer.context.truncated && atlasAskState.answer.context.truncated.truncated) bits.push('truncated source pack');
+  if (atlasAskState.error) bits.push('last ask returned an error');
+  return bits.join(' | ') || 'Runtime and grounding details appear here.';
+}
+function getAtlasAskMentionState() {
+  const input = document.getElementById('atlas-ask-input');
+  if (!input) return null;
+  const value = input.value || '';
+  const caret = typeof input.selectionStart === 'number' ? input.selectionStart : value.length;
+  const before = value.slice(0, caret);
+  const atIndex = before.lastIndexOf('@');
+  if (atIndex < 0) return null;
+  const token = before.slice(atIndex + 1);
+  if (token.includes(' ') || token.includes('\n') || token.includes('\t')) return null;
+  if (atIndex > 0) {
+    const prefix = before[atIndex - 1];
+    if (prefix && !/\s|[([{-]/.test(prefix)) return null;
+  }
+  const query = token.trim().toLowerCase();
+  const docs = INDEX.documents.filter(doc => {
+    const parts = [doc.title || '', doc.id || '']
+      .concat(doc.issues || [])
+      .concat(doc.knowledge_ids || []);
+    if (!query) return true;
+    return parts.some(value => String(value).toLowerCase().includes(query));
+  }).sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id)).slice(0, 8);
+  return { start: atIndex, end: caret, query, docs };
+}
+function closeAtlasAskMentions() {
+  atlasAskState.mention = null;
+  atlasAskState.mentionIndex = -1;
+}
+function updateAtlasAskMentions() {
+  const mention = getAtlasAskMentionState();
+  if (!mention || !mention.docs.length) {
+    closeAtlasAskMentions();
+    renderAtlasAsk();
+    return;
+  }
+  atlasAskState.mention = mention;
+  if (atlasAskState.mentionIndex < 0 || atlasAskState.mentionIndex >= mention.docs.length) atlasAskState.mentionIndex = 0;
+  renderAtlasAsk();
+}
+function selectAtlasAskMention(docId) {
+  const mention = atlasAskState.mention;
+  const input = document.getElementById('atlas-ask-input');
+  const doc = docById[docId];
+  if (!mention || !input || !doc) return;
+  const value = input.value || '';
+  const nextValue = `${value.slice(0, mention.start)}${value.slice(mention.end)}`.replace(/ {2,}/g, ' ');
+  input.value = nextValue;
+  const nextCaret = mention.start;
+  input.focus();
+  input.setSelectionRange(nextCaret, nextCaret);
+  atlasAskState.question = input.value;
+  closeAtlasAskMentions();
+  addAtlasAskSource(docId);
+}
+function moveAtlasAskMentionSelection(direction) {
+  if (!atlasAskState.mention || !atlasAskState.mention.docs.length) return;
+  const max = atlasAskState.mention.docs.length - 1;
+  atlasAskState.mentionIndex = atlasAskState.mentionIndex < 0 ? 0 : (atlasAskState.mentionIndex + direction + atlasAskState.mention.docs.length) % atlasAskState.mention.docs.length;
+  if (atlasAskState.mentionIndex > max) atlasAskState.mentionIndex = max;
+  renderAtlasAsk();
+}
+function commitAtlasAskMentionSelection() {
+  if (!atlasAskState.mention || !atlasAskState.mention.docs.length) return false;
+  const index = atlasAskState.mentionIndex >= 0 ? atlasAskState.mentionIndex : 0;
+  const doc = atlasAskState.mention.docs[index];
+  if (!doc) return false;
+  selectAtlasAskMention(doc.id);
+  return true;
+}
+function renderAtlasAskMentions() {
+  const root = document.getElementById('atlas-ask-mention-results');
+  if (!root) return;
+  const mention = atlasAskState.mention;
+  if (!mention || !mention.docs.length) {
+    root.classList.remove('open');
+    root.innerHTML = '';
+    return;
+  }
+  root.classList.add('open');
+  root.innerHTML = mention.docs.map((doc, index) => {
+    const active = index === atlasAskState.mentionIndex;
+    const meta = [doc.id, doc.family].filter(Boolean).join(' | ');
+    return `<div class="atlas-ask-mention-item${active ? ' active' : ''}" onclick="selectAtlasAskMention('${doc.id}')"><div class="atlas-ask-mention-copy"><strong>${escapeHtml(doc.title || doc.id)}</strong><span>${escapeHtml(meta)}</span></div><span class="atlas-ask-mention-tag">Doc</span></div>`;
+  }).join('');
+}
+function getAtlasAskAdvancedHtml() {
+  const visibleCount = getAtlasAskVisibleDocIds().length;
+  const focusId = getGraphFocusId();
+  const focusLabelRaw = focusId ? ((docById[focusId] && (docById[focusId].title || focusId)) || focusId) : 'None';
+  const focusLabel = focusLabelRaw.length > 72 ? `${focusLabelRaw.slice(0, 69)}...` : focusLabelRaw;
+  const answerContext = atlasAskState.answer && atlasAskState.answer.context ? atlasAskState.answer.context : null;
+  const sourceCount = answerContext && typeof answerContext.source_count === 'number' ? answerContext.source_count : 0;
+  const items = [
+    ['Mode', getAtlasAskModeLabel(atlasAskState.mode)],
+    ['Runtime', getAtlasAskRuntimeLabel(atlasAskState.runtimeAgent)],
+    ['Model', getAtlasAskModelLabel(atlasAskState.model)],
+    ['Sources', `${visibleCount} visible / ${atlasAskState.selectedDocIds.length} selected`],
+    ['Focus', focusLabel],
+  ];
+  if (sourceCount) items.push(['Used', `${sourceCount} docs`]);
+  if (atlasAskState.answer && atlasAskState.answer.confidence) items.push(['Confidence', atlasAskState.answer.confidence]);
+  return items.map(([label, value]) => `<div class="atlas-ask-meta-item"><div class="atlas-ask-meta-label">${escapeHtml(label)}</div><div class="atlas-ask-meta-value">${escapeHtml(value)}</div></div>`).join('');
+}
+function renderAtlasAsk() {
+  const dock = document.getElementById('atlas-ask-dock');
+  const overlay = document.getElementById('atlas-ask-overlay');
+  if (dock) dock.classList.toggle('open', !!atlasAskState.open);
+  if (!overlay) return;
+  overlay.classList.toggle('open', !!atlasAskState.open);
+  syncAtlasAskPosition();
+  if (!atlasAskState.open) return;
+  syncAtlasAskRuntimeSelection(
+    atlasAskState.runtimeAgent || (atlasAskState.health && atlasAskState.health.runtime_agent) || 'claude',
+    atlasAskState.model || (atlasAskState.health && atlasAskState.health.model) || ''
+  );
+  const runtimeSelect = document.getElementById('atlas-ask-runtime-select');
+  const modelSelect = document.getElementById('atlas-ask-model-select');
+  const modeSelect = document.getElementById('atlas-ask-mode-select');
+  const input = document.getElementById('atlas-ask-input');
+  const attachments = document.getElementById('atlas-ask-attachments');
+  const sourceSummary = document.getElementById('atlas-ask-source-summary');
+  const mentionResults = document.getElementById('atlas-ask-mention-results');
+  const answer = document.getElementById('atlas-ask-answer');
+  const status = document.getElementById('atlas-ask-status');
+  const submit = document.getElementById('atlas-ask-submit');
+  const infoPopover = document.getElementById('atlas-ask-info-popover');
+  const runtimeOptions = getAtlasAskRuntimeOptions();
+  const modelOptions = getAtlasAskModelOptions(atlasAskState.runtimeAgent);
+  if (input && input.value !== atlasAskState.question) input.value = atlasAskState.question;
+  if (runtimeSelect) {
+    runtimeSelect.innerHTML = runtimeOptions.map(option => `<option value="${option.id}">${escapeHtml(option.label)}</option>`).join('');
+    if (runtimeSelect.value !== atlasAskState.runtimeAgent) runtimeSelect.value = atlasAskState.runtimeAgent;
+  }
+  if (modelSelect) {
+    modelSelect.innerHTML = modelOptions.map(model => `<option value="${model}">${escapeHtml(getAtlasAskModelLabel(model))}</option>`).join('');
+    if (modelSelect.value !== atlasAskState.model) modelSelect.value = atlasAskState.model;
+  }
+  if (modeSelect && modeSelect.value !== atlasAskState.mode) modeSelect.value = atlasAskState.mode;
+  if (sourceSummary) sourceSummary.innerHTML = getAtlasAskSourceSummaryHtml();
+  if (mentionResults) renderAtlasAskMentions();
+  if (attachments) {
+    if (!atlasAskState.selectedDocIds.length) attachments.innerHTML = '';
+    else attachments.innerHTML = atlasAskState.selectedDocIds.map(id => {
+      const doc = docById[id];
+      const title = doc ? (doc.title || id) : id;
+      const meta = doc ? (doc.family || '') : '';
+      return `<div class="atlas-ask-attachment-chip" title="${escapeHtml(id)}"><span class="atlas-ask-attachment-icon">&#128196;</span><div class="atlas-ask-attachment-copy"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(meta || id)}</span></div><button class="atlas-ask-attachment-remove" onclick="removeAtlasAskSource('${id}')" aria-label="Remove source">&times;</button></div>`;
+    }).join('');
+  }
+  if (infoPopover) {
+    if (!atlasAskState.advancedOpen) {
+      infoPopover.classList.remove('open');
+      infoPopover.innerHTML = '';
+    } else {
+      infoPopover.classList.add('open');
+      infoPopover.innerHTML = `<div class="atlas-ask-info-card"><div class="atlas-ask-info-head"><div class="atlas-ask-info-title">Grounding Info</div><button class="atlas-ask-info-close" onclick="toggleAtlasAskAdvanced(false)" aria-label="Close grounding info" title="Close grounding info">&times;</button></div><div class="atlas-ask-advanced-summary">${escapeHtml(getAtlasAskAdvancedSummaryText())}</div><div class="atlas-ask-advanced-body">${getAtlasAskAdvancedHtml()}</div></div>`;
+    }
+  }
+  if (status) {
+    status.classList.remove('error', 'busy');
+    if (atlasAskState.status === 'asking') {
+      status.innerHTML = renderAtlasAskTypingHtml('Typing');
+      status.classList.add('busy');
+    } else if (atlasAskState.error) {
+      status.textContent = atlasAskState.error;
+      status.classList.add('error');
+    } else if (atlasAskState.health && atlasAskState.health.ok === false) {
+      status.textContent = atlasAskState.health.error || 'Atlas ask server is unavailable.';
+      status.classList.add('error');
+    } else {
+      status.textContent = 'Enter sends. Shift+Enter adds a newline. Answers stay grounded to the atlas source pack you selected.';
+    }
+  }
+  if (submit) submit.disabled = atlasAskState.status === 'asking' || !atlasAskState.question.trim();
+  if (!answer) return;
+
+  const turns = Array.isArray(atlasAskState.turns) ? atlasAskState.turns : [];
+  const blocks = [];
+  turns.forEach(turn => {
+    const citationHtml = turn.citations && turn.citations.length
+      ? `<ul>${turn.citations.map(item => `<li><button class="wiki-link" onclick="focusGraphNode('${item.path}')">${escapeHtml(item.title || item.path)}</button> &middot; ${escapeHtml(item.reason || 'Grounded source')}</li>`).join('')}</ul>`
+      : '<p class="muted">No citations were returned.</p>';
+    blocks.push(`<div class="atlas-ask-message user"><div class="atlas-ask-message-label">You</div><div class="atlas-ask-message-bubble">${escapeHtml(turn.question || '')}</div></div>`);
+    blocks.push(`<div class="atlas-ask-message assistant"><div class="atlas-ask-message-label">Atlas Ask</div><div class="atlas-ask-answer-card"><div class="graph-note-prose">${renderMarkdownFragment(turn.answer_markdown || '')}</div>${turn.disclaimer ? `<span class="muted">${escapeHtml(turn.disclaimer)}</span>` : ''}</div><div class="atlas-ask-answer-card"><h3>Citations</h3>${citationHtml}</div></div>`);
+  });
+
+  if (atlasAskState.pendingQuestion) {
+    blocks.push(`<div class="atlas-ask-message user"><div class="atlas-ask-message-label">You</div><div class="atlas-ask-message-bubble">${escapeHtml(atlasAskState.pendingQuestion)}</div></div>`);
+    blocks.push(`<div class="atlas-ask-message assistant"><div class="atlas-ask-message-label">Atlas Ask</div><div class="atlas-ask-answer-card busy">${renderAtlasAskTypingHtml('Typing')}</div></div>`);
+  }
+
+  if (!blocks.length) {
+    answer.innerHTML = '<div class="atlas-ask-empty">Ask Atlas from the visible graph group by default, or narrow the source pack with a selected node or attached docs.</div>';
+    return;
+  }
+
+  answer.innerHTML = `<div class="atlas-ask-thread">${blocks.join('')}</div>`;
+  scheduleMermaidRender(answer);
+  requestAnimationFrame(syncAtlasAskPosition);
+}
+async function submitAtlasAsk() {
+  const input = document.getElementById('atlas-ask-input');
+  const draftQuestion = input ? input.value.trim() : atlasAskState.question.trim();
+  atlasAskState.question = draftQuestion;
+  if (!draftQuestion) {
+    atlasAskState.error = 'Question is required.';
+    atlasAskState.status = 'error';
+    renderAtlasAsk();
+    return;
+  }
+  const payload = {
+    question: draftQuestion,
+    mode: atlasAskState.mode,
+    runtime_agent: atlasAskState.runtimeAgent,
+    model: atlasAskState.model,
+    focus_doc_id: getGraphFocusId() || '',
+    visible_doc_ids: getAtlasAskVisibleDocIds(),
+    selected_doc_ids: [...atlasAskState.selectedDocIds],
+  };
+  atlasAskState.pendingQuestion = draftQuestion;
+  atlasAskState.question = '';
+  if (input) input.value = '';
+  atlasAskState.status = 'asking';
+  atlasAskState.error = '';
+  renderAtlasAsk();
+  try {
+    const response = await fetch('/api/atlas-ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.error || 'Atlas ask failed.');
+    atlasAskState.answer = result;
+    atlasAskState.status = 'answered';
+    atlasAskState.lastQuestion = draftQuestion;
+    atlasAskState.pendingQuestion = '';
+    atlasAskState.runtimeAgent = result.runtime_agent || atlasAskState.runtimeAgent;
+    atlasAskState.model = result.model || atlasAskState.model;
+    atlasAskState.turns = (atlasAskState.turns || []).concat([{
+      question: draftQuestion,
+      answer_markdown: result.answer_markdown || '',
+      citations: Array.isArray(result.citations) ? result.citations : [],
+      confidence: result.confidence || 'medium',
+      disclaimer: result.disclaimer || '',
+      context: result.context || {},
+    }]).slice(-20);
+    if (result.history_entry) prependAtlasAskHistory(result.history_entry);
+  } catch (error) {
+    atlasAskState.answer = null;
+    atlasAskState.status = 'error';
+    atlasAskState.error = error && error.message ? error.message : String(error);
+    atlasAskState.pendingQuestion = '';
+    atlasAskState.question = draftQuestion;
+    if (input) {
+      input.value = draftQuestion;
+      input.focus();
+      const end = draftQuestion.length;
+      input.setSelectionRange(end, end);
+    }
+  }
+  renderAtlasAsk();
+}
+function toggleGraphFocusMinimized(forceState) {
+  graphState.overlayMinimized = typeof forceState === 'boolean' ? forceState : !graphState.overlayMinimized;
+  if (!graphState.overlayMinimized) {
+    graphState.overlayCollapsed = false;
+    syncGraphOverlayMode();
+    renderGraphDetail();
+    drawGraph();
+    return;
+  }
+  syncGraphOverlayMode();
+  renderGraphDetail();
+  graphState.layoutKey = null;
+  graphState.fitVisibleRequested = true;
+  drawGraph();
+}
+function openGraphFocusPeek(event) {
+  if (graphState.suppressFocusPeekClick) {
+    graphState.suppressFocusPeekClick = false;
+    if (event) event.preventDefault();
+    return;
+  }
+  toggleGraphFocusMinimized(false);
+}
+function toggleGraphFocusCollapsed(forceState) {
+  graphState.overlayMinimized = false;
+  graphState.overlayCollapsed = typeof forceState === 'boolean' ? forceState : !graphState.overlayCollapsed;
+  syncGraphOverlayMode();
+  renderGraphDetail();
+  drawGraph();
+}
+function renderGraphScope() {
+  const row = document.getElementById('graph-scope-row');
+  if (!row) return;
+  const rowWrap = row.closest('.graph-footer-row-controls');
+  if (!graphState.scopeFilter) {
+    row.classList.remove('active');
+    if (rowWrap) rowWrap.classList.remove('active');
+    row.innerHTML = '';
+    return;
+  }
+  const scope = graphState.scopeFilter;
+  row.classList.add('active');
+  if (rowWrap) rowWrap.classList.add('active');
+  row.innerHTML = `<span class="graph-scope-pill">${escapeHtml(getScopeLabel(scope.kind))}: ${escapeHtml(scope.value)} &middot; ${scope.count} docs</span><button class="graph-scope-clear" onclick="clearGraphScope()">Clear Scope</button>`;
+}
+function activateGraphScope(kind, value) {
+  const ids = getScopeDocIds(kind, value);
+  if (!ids.length) return;
+  graphState.scopeFilter = { kind, value, count: ids.length, docIds: new Set(ids) };
+  graphState.familyFilter = null;
+  graphState.manualViewport = false;
+  graphState.layoutKey = null;
+  graphState.fitVisibleRequested = true;
+  closeGraphSearchResults();
+  renderGraphFamilyFilters();
+  renderGraphScope();
+  if (atlasAskState.open) renderAtlasAsk();
+  renderGraphSearchResults(document.getElementById('graph-search').value);
+  if (!document.getElementById('graph-search').value.trim()) closeGraphSearchResults();
+  renderGraphDetail();
+  drawGraph();
+}
+function clearGraphScope(redraw = true) {
+  graphState.scopeFilter = null;
+  graphState.manualViewport = false;
+  graphState.layoutKey = null;
+  renderGraphScope();
+  if (atlasAskState.open) renderAtlasAsk();
+  if (redraw) {
+    renderGraphSearchResults(document.getElementById('graph-search').value);
+    if (!document.getElementById('graph-search').value.trim()) closeGraphSearchResults();
+    renderGraphDetail();
+    drawGraph();
+  }
+}
+function resetGraphViewport() {
+  graphState.zoom = 1;
+  graphState.targetZoom = 1;
+  graphState.panX = 0;
+  graphState.panY = 0;
+  graphState.targetPanX = 0;
+  graphState.targetPanY = 0;
+  graphState.autoFocus = false;
+  graphState.fitVisibleRequested = false;
+  graphState.manualViewport = false;
+}
+function closeGraphSearchResults(clearInput = false) {
+  const results = document.getElementById('graph-search-results');
+  graphState.searchResults = [];
+  graphState.searchResultIndex = -1;
+  if (results) {
+    results.classList.remove('open');
+    results.innerHTML = '';
+  }
+  if (clearInput) {
+    const input = document.getElementById('graph-search');
+    if (input) input.value = '';
+  }
+}
+function setGraphSelection(id, options = {}) {
+  if (!id || !docById[id]) return;
+  const opts = Object.assign({ pushHistory: true, clearSearch: true, detailMode: 'summary', animate: true }, options);
+  const currentlyVisible = getVisibleDocIds();
+  if (!currentlyVisible.has(id)) {
+    graphState.familyFilter = null;
+    graphState.scopeFilter = null;
+    graphState.layoutKey = null;
+    renderGraphFamilyFilters();
+    renderGraphScope();
+  }
+  graphState.selectedId = id;
+  graphState.hoveredId = null;
+  graphState.detailMode = opts.detailMode;
+  graphState.autoFocus = opts.animate;
+  graphState.fitVisibleRequested = false;
+  if (opts.animate) {
+    graphState.manualViewport = false;
+    graphState.targetZoom = Math.max(graphState.targetZoom, 1.18);
+  }
+  if (opts.pushHistory) pushGraphHistory(id);
+  if (opts.clearSearch) closeGraphSearchResults();
+  renderGraphDetail();
+  if (atlasAskState.open) renderAtlasAsk();
+  drawGraph();
+}
+function centerGraphOnSelection() {
+  if (!graphState.selectedId) return;
+  graphState.autoFocus = true;
+  graphState.fitVisibleRequested = false;
+  graphState.manualViewport = false;
+  graphState.targetZoom = Math.max(graphState.targetZoom, 1.18);
+  renderGraphDetail();
+  drawGraph();
+}
+function fitGraphGroup() {
+  fitVisibleGraph();
+}
+function clearGraphSelection(clearSearch = false) {
+  graphState.overlayMinimized = false;
+  graphState.overlayCollapsed = false;
+  graphState.selectedId = null;
+  graphState.hoveredId = null;
+  graphState.detailMode = 'summary';
+  graphState.autoFocus = false;
+  if (clearSearch) closeGraphSearchResults(true); else closeGraphSearchResults();
+  renderGraphDetail();
+  if (atlasAskState.open) renderAtlasAsk();
+  drawGraph();
+}
+function navigateGraphHistory(direction) {
+  const nextIndex = graphState.historyIndex + direction;
+  if (nextIndex < 0 || nextIndex >= graphState.history.length) return;
+  graphState.historyIndex = nextIndex;
+  setGraphSelection(graphState.history[nextIndex], { pushHistory: false, clearSearch: false, detailMode: 'summary', animate: true });
+}
+function toggleGraphOverlayMode() {
+  graphState.overlayMinimized = false;
+  graphState.overlayCollapsed = false;
+  graphState.overlayMode = graphState.overlayMode === 'compact' ? 'expanded' : 'compact';
+  syncGraphOverlayMode();
+  graphState.manualViewport = false;
+  graphState.fitVisibleRequested = true;
+  renderGraphDetail();
+  drawGraph();
+}
+function focusGraphNode(id) {
+  graphState.overlayMinimized = false;
+  graphState.overlayCollapsed = false;
+  setGraphSelection(id, { pushHistory: true, clearSearch: true, detailMode: 'summary', animate: true });
+}
+function lockGraphNode(id) {
+  graphState.overlayMinimized = false;
+  graphState.overlayCollapsed = false;
+  setGraphSelection(id, { pushHistory: true, clearSearch: true, detailMode: 'summary', animate: false });
+}
+function openGraphFullDetail(id) {
+  if (id && docById[id]) {
+    graphState.selectedId = id;
+    graphState.hoveredId = null;
+    pushGraphHistory(id);
+  }
+  if (!graphState.selectedId) return;
+  graphState.detailMode = 'full';
+  closeGraphSearchResults();
+  renderGraphDetail();
+  drawGraph();
+}
+function showGraphSummary() {
+  graphState.detailMode = 'summary';
+  renderGraphDetail();
+}
+function fitVisibleGraph() {
+  graphState.autoFocus = false;
+  graphState.manualViewport = false;
+  graphState.fitVisibleRequested = true;
+  renderGraphDetail();
+  drawGraph();
+}
+function setManualViewport() {
+  graphState.autoFocus = false;
+  graphState.fitVisibleRequested = false;
+  graphState.manualViewport = true;
+  graphState.targetPanX = graphState.panX;
+  graphState.targetPanY = graphState.panY;
+  graphState.targetZoom = graphState.zoom;
+}
+function applyCameraStep() {
+  graphState.zoom += (graphState.targetZoom - graphState.zoom) * 0.16;
+  graphState.panX += (graphState.targetPanX - graphState.panX) * 0.18;
+  graphState.panY += (graphState.targetPanY - graphState.panY) * 0.18;
+  updateZoomBadge();
+}
+function getGraphViewportMetrics(width, height) {
+  const overlay = document.getElementById('graph-focus-overlay');
+  const toolbar = document.getElementById('graph-toolbar-overlay');
+  const overlayWidth = window.innerWidth > 1180 && overlay && !overlay.classList.contains('hidden') && !overlay.classList.contains('minimized') && !graphState.focusPosition ? overlay.getBoundingClientRect().width : 0;
+  const toolbarHeight = toolbar && !graphState.toolbarPosition && !toolbar.classList.contains('minimized') ? toolbar.getBoundingClientRect().height : 0;
+  const safeGap = overlayWidth ? 30 : 0;
+  const usableWidth = Math.max(260, width - overlayWidth - safeGap - 46);
+  const topInset = toolbarHeight ? Math.min(height * 0.34, toolbarHeight + 28) : 0;
+  const usableHeight = Math.max(220, height - topInset - 46);
+  const centerX = 26 + usableWidth / 2;
+  const centerY = topInset + usableHeight / 2;
+  return { overlayWidth, safeGap, usableWidth, usableHeight, centerX, centerY, topInset };
+}
+function computePositionBounds(visibleDocs) {
+  if (!visibleDocs.length || !graphState.positions) return null;
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  visibleDocs.forEach(doc => {
+    const pos = graphState.positions[doc.id];
+    if (!pos) return;
+    minX = Math.min(minX, pos.x);
+    maxX = Math.max(maxX, pos.x);
+    minY = Math.min(minY, pos.y);
+    maxY = Math.max(maxY, pos.y);
+  });
+  if (!Number.isFinite(minX)) return null;
+  return {
+    minX,
+    maxX,
+    minY,
+    maxY,
+    centerX: (minX + maxX) / 2,
+    centerY: (minY + maxY) / 2,
+    width: Math.max(1, maxX - minX),
+    height: Math.max(1, maxY - minY),
+  };
+}
+function computePanForTargetCenter(worldX, worldY, screenX, screenY, width, height, zoom) {
+  return {
+    panX: screenX - ((worldX - width / 2) * zoom + width / 2),
+    panY: screenY - ((worldY - height / 2) * zoom + height / 2),
+  };
+}
+function worldToScreen(worldX, worldY, width, height) {
+  return {
+    x: (worldX - width / 2) * graphState.zoom + width / 2 + graphState.panX,
+    y: (worldY - height / 2) * graphState.zoom + height / 2 + graphState.panY,
+  };
+}
+function getMotionSeed(id) {
+  if (graphState.motionSeeds[id]) return graphState.motionSeeds[id];
+  const hash = hashString(id);
+  graphState.motionSeeds[id] = {
+    phase: (hash % 360) * (Math.PI / 180),
+    amplitudeX: 2.4 + (hash % 9) * 0.35,
+    amplitudeY: 2.0 + ((Math.floor(hash / 9)) % 9) * 0.33,
+    speed: 0.00075 + ((Math.floor(hash / 81)) % 7) * 0.00008,
+    drift: 0.55 + ((Math.floor(hash / 567)) % 5) * 0.12,
+  };
+  return graphState.motionSeeds[id];
+}
+function getDisplayPosition(id, base) {
+  const seed = getMotionSeed(id);
+  const t = graphState.motionTime * seed.speed;
+  return {
+    x: base.x + Math.cos(seed.phase + t) * seed.amplitudeX + Math.sin(seed.phase * 0.7 + t * 0.9) * seed.drift,
+    y: base.y + Math.sin(seed.phase + t * 0.95) * seed.amplitudeY + Math.cos(seed.phase * 0.5 + t * 0.82) * seed.drift,
+  };
+}
+
+(function initFilters() {
+  const fr = document.getElementById('family-filters');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn active';
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => {
+    activeFamily = null;
+    renderDocs();
+    document.querySelectorAll('#family-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+  };
+  fr.appendChild(allBtn);
+  famSet.forEach(fam => {
+    const color = FAMILY_COLORS[fam] || '#8b949e';
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.style.borderColor = color;
+    btn.innerHTML = `<span class="dot" style="background:${color}"></span> ${fam}`;
+    btn.onclick = () => {
+      activeFamily = fam;
+      renderDocs();
+      document.querySelectorAll('#family-filters .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    fr.appendChild(btn);
+  });
+})();
+
+function renderDocs(query = '') {
+  const list = document.getElementById('doc-list');
+  list.innerHTML = '';
+  const q = query.toLowerCase();
+  const filtered = docs.filter(d => {
+    if (activeFamily && d.family !== activeFamily) return false;
+    if (q && !d.title.toLowerCase().includes(q) && !d.id.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  currentDocListIds = filtered.map(d => d.id);
+  const groups = {};
+  filtered.forEach(d => { (groups[d.family] = groups[d.family] || []).push(d); });
+  Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([fam, items]) => {
+    const color = FAMILY_COLORS[fam] || '#8b949e';
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-header';
+    hdr.innerHTML = `<span class="dot" style="background:${color}"></span> ${fam} (${items.length})`;
+    list.appendChild(hdr);
+    items.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'doc-item';
+      const issueStr = d.issues.length ? ` &bull; ${d.issues.slice(0,3).join(', ')}${d.issues.length > 3 ? '...' : ''}` : '';
+      el.innerHTML = `<div class="title">${d.title || d.id}</div><div class="meta"><code>${d.id}</code>${issueStr}</div>`;
+      el.onclick = () => openDetail(d.id);
+      list.appendChild(el);
+    });
+  });
+  if (!filtered.length) {
+    list.innerHTML = '<div style="color:var(--text2);padding:20px;text-align:center">No documents match filter.</div>';
+  }
+}
+renderDocs();
+document.getElementById('search').addEventListener('input', e => renderDocs(e.target.value));
+const atlasAskInput = document.getElementById('atlas-ask-input');
+const atlasAskLaunch = document.getElementById('atlas-ask-launch');
+const atlasAskDragBar = document.getElementById('atlas-ask-drag-bar');
+const graphToolbarDragBar = document.getElementById('graph-toolbar-drag-bar');
+const graphToolbarPeek = document.getElementById('graph-toolbar-peek');
+const graphFocusPanel = document.getElementById('graph-focus-panel');
+if (atlasAskLaunch) {
+  atlasAskLaunch.addEventListener('mousedown', startAtlasAskDrag);
+  atlasAskLaunch.addEventListener('click', event => {
+    if (atlasAskState.suppressLaunchClick) {
+      atlasAskState.suppressLaunchClick = false;
+      event.preventDefault();
+      return;
+    }
+    toggleAtlasAsk(true);
+  });
+}
+if (atlasAskDragBar) atlasAskDragBar.addEventListener('mousedown', startAtlasAskDrag);
+if (graphToolbarDragBar) graphToolbarDragBar.addEventListener('mousedown', event => startGraphOverlayDrag('toolbar', event));
+if (graphToolbarPeek) graphToolbarPeek.addEventListener('mousedown', event => startGraphOverlayDrag('toolbar', event));
+if (graphFocusPanel) {
+  graphFocusPanel.addEventListener('mousedown', event => {
+    const dragTarget = event.target.closest('.graph-focus-drag-bar, .graph-focus-peek');
+    if (!dragTarget) return;
+    startGraphOverlayDrag('focus', event);
+  });
+}
+if (atlasAskInput) {
+  atlasAskInput.addEventListener('input', event => {
+    atlasAskState.question = event.target.value;
+    updateAtlasAskMentions();
+    renderAtlasAsk();
+  });
+  atlasAskInput.addEventListener('keydown', event => {
+    if (atlasAskState.mention && atlasAskState.mention.docs.length) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        moveAtlasAskMentionSelection(1);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        moveAtlasAskMentionSelection(-1);
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        commitAtlasAskMentionSelection();
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeAtlasAskMentions();
+        renderAtlasAsk();
+        return;
+      }
+    }
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      submitAtlasAsk();
+    }
+  });
+  atlasAskInput.addEventListener('blur', () => {
+    setTimeout(() => {
+      closeAtlasAskMentions();
+      renderAtlasAsk();
+    }, 120);
+  });
+}
+document.addEventListener('mousedown', event => {
+  if (!atlasAskState.advancedOpen) return;
+  const popover = document.getElementById('atlas-ask-info-popover');
+  const toggle = document.getElementById('atlas-ask-info-toggle');
+  if ((popover && popover.contains(event.target)) || (toggle && toggle.contains(event.target))) return;
+  atlasAskState.advancedOpen = false;
+  renderAtlasAsk();
+});
+document.addEventListener('mousedown', event => {
+  const familyMore = document.getElementById('graph-family-more-wrap');
+  if (graphState.familyOverflowOpen && familyMore && !familyMore.contains(event.target)) {
+    graphState.familyOverflowOpen = false;
+    renderGraphFamilyFilters();
+  }
+  const settingsDock = document.getElementById('graph-settings-dock');
+  if (graphState.settingsOpen && settingsDock && !settingsDock.contains(event.target)) {
+    graphState.settingsOpen = false;
+    syncGraphSettings();
+  }
+});
+window.addEventListener('mousemove', dragAtlasAsk);
+window.addEventListener('mouseup', stopAtlasAskDrag);
+window.addEventListener('mousemove', dragGraphOverlay);
+window.addEventListener('mouseup', stopGraphOverlayDrag);
+window.addEventListener('resize', syncAtlasAskPosition);
+window.addEventListener('resize', syncGraphOverlayPositions);
+function getDetailTraversalIds() {
+  return currentDocListIds && currentDocListIds.length ? currentDocListIds.slice() : docs.map(doc => doc.id);
+}
+function syncDetailHeader(doc) {
+  const color = FAMILY_COLORS[doc.family] || '#8b949e';
+  const icon = document.getElementById('detail-icon');
+  const kicker = document.getElementById('detail-kicker');
+  const title = document.getElementById('detail-title');
+  const subtitle = document.getElementById('detail-subtitle');
+  if (icon) {
+    icon.textContent = (doc.family || doc.title || doc.id || 'D').slice(0, 1).toUpperCase();
+    icon.style.background = color;
+  }
+  if (kicker) kicker.textContent = doc.family || 'Document';
+  if (title) title.textContent = doc.title || doc.id;
+  if (subtitle) subtitle.textContent = `${doc.id} - trust: ${doc.trust_zone || 'unknown'}`;
+}
+function syncDetailNavButtons() {
+  const ids = detailState.docIds && detailState.docIds.length ? detailState.docIds : getDetailTraversalIds();
+  const index = ids.indexOf(detailState.currentId);
+  const prev = document.getElementById('detail-prev');
+  const next = document.getElementById('detail-next');
+  if (prev) prev.disabled = index <= 0;
+  if (next) next.disabled = index === -1 || index >= ids.length - 1;
+}
+function navigateDetail(direction) {
+  const ids = detailState.docIds && detailState.docIds.length ? detailState.docIds : getDetailTraversalIds();
+  const index = ids.indexOf(detailState.currentId);
+  if (index === -1) return;
+  const nextIndex = index + direction;
+  if (nextIndex < 0 || nextIndex >= ids.length) return;
+  openDetail(ids[nextIndex], { preserveList: true });
+}
+function openDetail(id, options = {}) {
+  const doc = docById[id];
+  if (!doc) return;
+  if (!options.preserveList) detailState.docIds = getDetailTraversalIds();
+  if (!detailState.docIds.includes(id)) detailState.docIds = [id].concat(detailState.docIds);
+  detailState.currentId = id;
+  const color = FAMILY_COLORS[doc.family] || '#8b949e';
+  const outgoing = docEdges.filter(e => e.source === id);
+  const incoming = docEdges.filter(e => e.target === id);
+  syncDetailHeader(doc);
+  syncDetailNavButtons();
+  let html = `<h2>${escapeHtml(doc.title || doc.id)}</h2>`;
+  html += `<p><span class="tag" style="background:${color}22;color:${color};border:1px solid ${color}">${escapeHtml(doc.family)}</span> <span style="font-size:11px;color:var(--text2)">${escapeHtml(doc.role)}</span> <span style="font-size:11px;color:var(--text2)">&bull; trust: ${escapeHtml(doc.trust_zone)}</span></p>`;
+  html += `<h3>File Path</h3><p><code>${escapeHtml(doc.id)}</code></p>`;
+  if (doc.headings && doc.headings.length) {
+    html += '<h3>Headings</h3><ul>';
+    doc.headings.slice(0, 10).forEach(value => { html += `<li>${escapeHtml(value)}</li>`; });
+    html += '</ul>';
+  }
+  if (doc.issues.length) {
+    html += '<h3>Backlog Issues</h3><ul>';
+    doc.issues.forEach(value => { html += `<li><code>${escapeHtml(value)}</code></li>`; });
+    html += '</ul>';
+  }
+  if (doc.knowledge_ids.length) {
+    html += '<h3>Knowledge Objects</h3><ul>';
+    doc.knowledge_ids.forEach(value => { html += `<li><code>${escapeHtml(value)}</code></li>`; });
+    html += '</ul>';
+  }
+  if (doc.skill_refs.length || doc.template_refs.length || doc.release_refs.length || doc.lane_refs.length) {
+    html += '<h3>Typed References</h3><ul>';
+    doc.skill_refs.forEach(value => { html += `<li>Skill: <code>${escapeHtml(value)}</code></li>`; });
+    doc.template_refs.forEach(value => { html += `<li>Template: <code>${escapeHtml(value)}</code></li>`; });
+    doc.release_refs.forEach(value => { html += `<li>Release: <code>${escapeHtml(value)}</code></li>`; });
+    doc.lane_refs.forEach(value => { html += `<li>Lane: <code>${escapeHtml(value)}</code></li>`; });
+    html += '</ul>';
+  }
+  if (outgoing.length) {
+    html += `<h3>Outgoing Doc References (${outgoing.length})</h3><ul>`;
+    outgoing.forEach(edge => {
+      const target = docById[edge.target];
+      if (target) html += `<li><code>${escapeHtml(edge.type)}</code> &rarr; <span class="wiki-link" onclick="openDetail('${edge.target}', { preserveList: true })">${escapeHtml(target.title || edge.target)}</span></li>`;
+    });
+    html += '</ul>';
+  }
+  if (incoming.length) {
+    html += `<h3>Incoming Doc References (${incoming.length})</h3><ul>`;
+    incoming.forEach(edge => {
+      const source = docById[edge.source];
+      if (source) html += `<li><code>${escapeHtml(edge.type)}</code> &larr; <span class="wiki-link" onclick="openDetail('${edge.source}', { preserveList: true })">${escapeHtml(source.title || edge.source)}</span></li>`;
+    });
+    html += '</ul>';
+  }
+  document.getElementById('detail-content').innerHTML = html;
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closeDetail() {
+  detailState.currentId = null;
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+function setGraphFamilyFilter(family) {
+  graphState.familyFilter = family;
+  graphState.footerFamilySelection = family;
+  graphState.familyOverflowOpen = false;
+  graphState.scopeFilter = null;
+  graphState.manualViewport = false;
+  const visibleIds = getVisibleDocIds();
+  normalizeGraphFocus(visibleIds);
+  graphState.layoutKey = null;
+  graphState.fitVisibleRequested = !!family;
+  renderGraphFamilyFilters();
+  renderGraphScope();
+  buildGraphLegend(getVisibleDocs());
+  renderGraphSearchResults(document.getElementById('graph-search').value);
+  if (!document.getElementById('graph-search').value.trim()) closeGraphSearchResults();
+  if (atlasAskState.open) renderAtlasAsk();
+  renderGraphDetail();
+  drawGraph();
+}
+
+function buildGraphLegend() {
+  renderGraphFamilyFilters();
+  renderGraphEdgeFilters();
+}
+
+function setGraphFooterFamilySelection(family) {
+  setGraphFamilyFilter(family);
+}
+
+function measureGraphFooterChipWidth(label, className = 'filter-btn legend-pill') {
+  let measurer = document.getElementById('graph-footer-chip-measurer');
+  if (!measurer) {
+    measurer = document.createElement('div');
+    measurer.id = 'graph-footer-chip-measurer';
+    measurer.style.position = 'fixed';
+    measurer.style.left = '-9999px';
+    measurer.style.top = '-9999px';
+    measurer.style.visibility = 'hidden';
+    measurer.style.pointerEvents = 'none';
+    document.body.appendChild(measurer);
+  }
+  const chip = document.createElement('button');
+  chip.className = className;
+  chip.textContent = label;
+  measurer.appendChild(chip);
+  const width = chip.offsetWidth;
+  chip.remove();
+  return width;
+}
+
+function getOrderedGraphFamilies() {
+  const orderedFamilies = famSet.slice();
+  if (graphState.familyFilter && orderedFamilies.includes(graphState.familyFilter)) {
+    orderedFamilies.splice(orderedFamilies.indexOf(graphState.familyFilter), 1);
+    orderedFamilies.unshift(graphState.familyFilter);
+  }
+  return orderedFamilies;
+}
+
+function getGraphFamilyVisibleFamilies() {
+  const inlineTools = document.querySelector('#panel-graph .graph-footer-inline-tools');
+  const shell = document.querySelector('#panel-graph .graph-canvas-shell');
+  const orderedFamilies = getOrderedGraphFamilies();
+  const availableWidth = inlineTools && inlineTools.clientWidth
+    ? inlineTools.clientWidth
+    : Math.max(280, (shell && shell.clientWidth ? shell.clientWidth : window.innerWidth) - 64);
+  const allWidth = measureGraphFooterChipWidth(`All (${docs.length})`);
+  const familyWidths = orderedFamilies.map(family => measureGraphFooterChipWidth(`${family} (${familyCounts[family] || 0})`));
+  const gap = 8;
+  const widthBudget = Math.max(220, availableWidth);
+  const totalWidth = allWidth + orderedFamilies.reduce((sum, family, index) => sum + gap + familyWidths[index], 0);
+  if (totalWidth <= widthBudget) {
+    return orderedFamilies;
+  }
+  const visible = [];
+  let used = allWidth;
+  for (let index = 0; index < orderedFamilies.length; index += 1) {
+    const remaining = orderedFamilies.length - index - 1;
+    const reserveMore = remaining > 0 ? gap + measureGraphFooterChipWidth(`More (${remaining})`) : 0;
+    const nextWidth = gap + familyWidths[index];
+    if (used + nextWidth + reserveMore > widthBudget) {
+      break;
+    }
+    used += nextWidth;
+    visible.push(orderedFamilies[index]);
+  }
+  return visible;
+}
+
+function toggleGraphFamilyMore(forceState) {
+  graphState.familyOverflowOpen = typeof forceState === 'boolean' ? forceState : !graphState.familyOverflowOpen;
+  renderGraphFamilyFilters();
+}
+
+function makeGraphFamilyButton(label, family, count, className = 'filter-btn legend-pill') {
+  const btn = document.createElement('button');
+  const active = graphState.familyFilter === family || (!family && !graphState.familyFilter);
+  btn.className = className + (active ? ' active' : '');
+  btn.textContent = `${label} (${count})`;
+  btn.onclick = () => setGraphFamilyFilter(family);
+  return btn;
+}
+
+function renderGraphFamilyFilters() {
+  const root = document.getElementById('graph-family-filters');
+  const moreRoot = document.getElementById('graph-family-more-wrap');
+  if (!root) return;
+  root.innerHTML = '';
+  if (moreRoot) moreRoot.innerHTML = '';
+  root.appendChild(makeGraphFamilyButton('All', null, docs.length));
+  const visibleFamilies = getGraphFamilyVisibleFamilies();
+  const visibleSet = new Set(visibleFamilies);
+  const orderedFamilies = getOrderedGraphFamilies();
+  visibleFamilies.forEach(family => root.appendChild(makeGraphFamilyButton(family, family, familyCounts[family] || 0)));
+  const hiddenFamilies = orderedFamilies.filter(family => !visibleSet.has(family));
+  if (moreRoot && hiddenFamilies.length) {
+    const moreButton = document.createElement('button');
+    moreButton.className = 'filter-btn legend-pill' + (graphState.familyOverflowOpen ? ' active' : '');
+    moreButton.textContent = graphState.familyOverflowOpen ? 'Less' : `More (${hiddenFamilies.length})`;
+    moreButton.onclick = (event) => {
+      event.stopPropagation();
+      toggleGraphFamilyMore();
+    };
+    const panel = document.createElement('div');
+    panel.className = 'graph-family-more-panel' + (graphState.familyOverflowOpen ? ' open' : '');
+    hiddenFamilies.forEach(family => panel.appendChild(makeGraphFamilyButton(family, family, familyCounts[family] || 0)));
+    moreRoot.appendChild(moreButton);
+    moreRoot.appendChild(panel);
+  }
+}
+
+function syncGraphSettingsCorner() {
+  const dock = document.getElementById('graph-settings-dock');
+  const overlay = document.getElementById('graph-focus-overlay');
+  if (!dock) return;
+  const hasVisibleFocus = !!(overlay && !overlay.classList.contains('hidden') && !graphState.overlayMinimized);
+  dock.classList.toggle('shifted', hasVisibleFocus);
+  dock.classList.toggle('expanded', hasVisibleFocus && graphState.overlayMode === 'expanded');
+}
+
+function syncGraphSettings() {
+  const panel = document.getElementById('graph-settings-panel');
+  const toggle = document.getElementById('graph-settings-toggle');
+  syncGraphSettingsCorner();
+  if (panel) panel.classList.toggle('open', !!graphState.settingsOpen);
+  if (toggle) toggle.classList.toggle('active', !!graphState.settingsOpen);
+}
+
+function renderAtlasAskTypingHtml(label = 'Typing') {
+  return `<span class="atlas-ask-typing"><span class="atlas-ask-typing-text">${escapeHtml(label)}</span><span class="atlas-ask-typing-dots" aria-hidden="true"><span class="atlas-ask-typing-dot"></span><span class="atlas-ask-typing-dot"></span><span class="atlas-ask-typing-dot"></span></span></span>`;
+}
+
+function toggleGraphSettings(forceState) {
+  graphState.settingsOpen = typeof forceState === 'boolean' ? forceState : !graphState.settingsOpen;
+  syncGraphSettings();
+}
+
+function renderGraphEdgeFilters() {
+  const root = document.getElementById('graph-edge-filters');
+  if (!root) return;
+  root.innerHTML = '';
+  const edgesByType = {
+    references_path: docEdges.filter(edge => edge.type === 'references_path').length,
+    references_wiki_link: docEdges.filter(edge => edge.type === 'references_wiki_link').length,
+  };
+  const defs = [
+    { key: 'all', label: 'All Links', count: docEdges.length },
+    { key: 'references_path', label: 'Path', count: edgesByType.references_path },
+    { key: 'references_wiki_link', label: 'Wiki', count: edgesByType.references_wiki_link },
+  ];
+  defs.forEach(def => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn legend-pill edge' + (graphState.edgeFilter === def.key ? ' active' : '');
+    btn.textContent = `${def.label} (${def.count})`;
+    btn.onclick = () => {
+      graphState.edgeFilter = def.key;
+      renderGraphEdgeFilters();
+      if (!document.getElementById('graph-search').value.trim()) closeGraphSearchResults();
+      renderGraphDetail();
+      drawGraph();
+    };
+    root.appendChild(btn);
+  });
+}
+
+function setGraphSearchTypeFilter(type) {
+  graphState.searchTypeFilter = type;
+  renderGraphSearchResults(document.getElementById('graph-search').value);
+}
+function moveGraphSearchSelection(direction) {
+  if (!graphState.searchResults.length) return;
+  const max = graphState.searchResults.length - 1;
+  if (graphState.searchResultIndex < 0) {
+    graphState.searchResultIndex = direction > 0 ? 0 : max;
+  } else {
+    graphState.searchResultIndex = (graphState.searchResultIndex + direction + graphState.searchResults.length) % graphState.searchResults.length;
+  }
+  renderGraphSearchResults(document.getElementById('graph-search').value);
+}
+
+function activateGraphSearchResult(result) {
+  if (!result) return;
+  if (result.type === 'ask') {
+    toggleAtlasAsk(true);
+    loadAtlasAskHistoryItem(result.id);
+    closeGraphSearchResults();
+    return;
+  }
+  focusGraphNode(result.id);
+}
+
+function commitGraphSearchSelection() {
+  if (graphState.searchResultIndex >= 0 && graphState.searchResultIndex < graphState.searchResults.length) {
+    activateGraphSearchResult(graphState.searchResults[graphState.searchResultIndex]);
+    return;
+  }
+  if (graphState.searchResults.length) {
+    activateGraphSearchResult(graphState.searchResults[0]);
+  }
+}
+
+function scoreSearchText(query, value, exactScore, prefixScore, includesScore) {
+  const text = String(value || '').toLowerCase().trim();
+  if (!text || !query) return 0;
+  if (text === query) return exactScore;
+  if (text.startsWith(query)) return prefixScore;
+  if (text.includes(query)) return includesScore;
+  return 0;
+}
+
+function buildUnifiedDocSearchResults(query) {
+  return INDEX.documents.map(doc => {
+    const score =
+      scoreSearchText(query, doc.title || '', 220, 150, 100) +
+      scoreSearchText(query, doc.id || '', 180, 120, 80) +
+      (doc.issues || []).reduce((total, value) => total + scoreSearchText(query, value, 140, 100, 70), 0) +
+      (doc.knowledge_ids || []).reduce((total, value) => total + scoreSearchText(query, value, 140, 100, 70), 0) +
+      Math.min(24, nodeStats[doc.id]?.degree || 0);
+    return {
+      type: 'doc',
+      id: doc.id,
+      score,
+      doc,
+      sortKey: (doc.title || doc.id || '').toLowerCase(),
+    };
+  }).filter(item => item.score > 0).sort((a, b) => (b.score - a.score) || a.sortKey.localeCompare(b.sortKey));
+}
+
+function buildUnifiedAskSearchResults(query) {
+  return (atlasAskState.history || []).map((item, index) => {
+    const score =
+      scoreSearchText(query, item.question || '', 240, 170, 110) +
+      scoreSearchText(query, item.answer_preview || '', 60, 45, 30) +
+      (item.source_paths || []).reduce((total, value) => total + scoreSearchText(query, value, 170, 120, 85), 0) +
+      Math.max(0, 18 - index);
+    return {
+      type: 'ask',
+      id: item.id,
+      score,
+      item,
+      sortKey: String(item.timestamp || ''),
+    };
+  }).filter(result => result.score > 0).sort((a, b) => (b.score - a.score) || String(b.item.timestamp || '').localeCompare(String(a.item.timestamp || '')));
+}
+
+function renderGraphSearchToolbar(root, counts) {
+  const toolbar = document.createElement('div');
+  toolbar.className = 'graph-results-toolbar';
+  const filters = document.createElement('div');
+  filters.className = 'graph-results-filter-row';
+  [
+    ['all', `All (${counts.all})`],
+    ['doc', `Docs (${counts.doc})`],
+    ['ask', `Asks (${counts.ask})`],
+  ].forEach(([type, label]) => {
+    const button = document.createElement('button');
+    button.className = 'graph-results-type-btn' + (graphState.searchTypeFilter === type ? ' active' : '');
+    button.textContent = label;
+    button.onclick = () => setGraphSearchTypeFilter(type);
+    filters.appendChild(button);
+  });
+  const meta = document.createElement('div');
+  meta.className = 'graph-results-meta';
+  meta.textContent = graphState.searchTypeFilter === 'all'
+    ? (atlasAskState.historyLoaded ? 'Unified atlas search' : 'Doc search; saved asks loading')
+    : graphState.searchTypeFilter === 'doc'
+      ? 'Doc results only'
+      : 'Saved ask results only';
+  toolbar.appendChild(filters);
+  toolbar.appendChild(meta);
+  root.appendChild(toolbar);
+}
+
+async function renderGraphSearchResults(query) {
+  const root = document.getElementById('graph-search-results');
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    graphState.searchResults = [];
+    graphState.searchResultIndex = -1;
+    root.classList.remove('open');
+    root.innerHTML = '';
+    return;
+  }
+  const needsHistory = !atlasAskState.historyLoaded;
+  if (needsHistory) {
+    ensureAtlasAskHistory().then(() => {
+      const input = document.getElementById('graph-search');
+      if (input && input.value.trim().toLowerCase() === q) renderGraphSearchResults(input.value);
+    });
+  }
+  const docResults = buildUnifiedDocSearchResults(q);
+  const askResults = needsHistory ? [] : buildUnifiedAskSearchResults(q);
+  const counts = { all: docResults.length + askResults.length, doc: docResults.length, ask: askResults.length };
+  let matches = docResults.concat(askResults).sort((a, b) => (b.score - a.score) || a.sortKey.localeCompare(b.sortKey));
+  if (graphState.searchTypeFilter !== 'all') matches = matches.filter(item => item.type === graphState.searchTypeFilter);
+  matches = matches.slice(0, 12);
+  graphState.searchResults = matches;
+  if (!matches.length) {
+    graphState.searchResultIndex = -1;
+    root.classList.add('open');
+    root.innerHTML = '';
+    renderGraphSearchToolbar(root, counts);
+    root.insertAdjacentHTML('beforeend', '<div class="result-item"><strong>No match</strong><span>Try a shorter title, path, issue id, knowledge id, or previous ask question.</span></div>');
+    return;
+  }
+  if (graphState.searchResultIndex >= matches.length) graphState.searchResultIndex = matches.length - 1;
+  root.classList.add('open');
+  root.innerHTML = '';
+  renderGraphSearchToolbar(root, counts);
+  matches.forEach((result, index) => {
+    const item = document.createElement('div');
+    item.className = 'result-item' + (index == graphState.searchResultIndex ? ' active' : '');
+    if (result.type === 'ask') {
+      const ask = result.item;
+      const meta = [ask.timestamp || '', getAtlasAskModeLabel(ask.mode || 'current-focus')].filter(Boolean).join(' | ');
+      item.innerHTML = `<div class="result-copy"><strong>${escapeHtml(ask.question || 'Saved ask')}</strong><span>${escapeHtml(meta)} &bull; ${(ask.source_paths || []).length} sources</span></div><span class="result-kind-tag ask">Ask</span>`;
+    } else {
+      const atlasDoc = result.doc;
+      item.innerHTML = `<div class="result-copy"><strong>${escapeHtml(atlasDoc.title || atlasDoc.id)}</strong><span>${escapeHtml(atlasDoc.id)} &bull; ${escapeHtml(atlasDoc.family)}</span></div><div style="display:flex;align-items:center;gap:8px"><span class="result-kind-tag doc">Doc</span><button class="result-add" title="Add to Ask Sources">+ Source</button></div>`;
+      const addButton = item.querySelector('.result-add');
+      if (addButton) {
+        addButton.onclick = (event) => {
+          event.stopPropagation();
+          addAtlasAskSource(atlasDoc.id);
+        };
+      }
+    }
+    item.onclick = () => {
+      activateGraphSearchResult(result);
+    };
+    root.appendChild(item);
+  });
+}
+
+function renderGraphHoverCard() {
+  const card = document.getElementById('graph-hover-card');
+  if (!card) return;
+  if (graphState.selectedId || !graphState.hoveredId) {
+    card.classList.remove('open');
+    card.innerHTML = '';
+    return;
+  }
+  const hovered = graphState.renderedPositions.find(pos => pos.id === graphState.hoveredId);
+  if (!hovered) {
+    card.classList.remove('open');
+    card.innerHTML = '';
+    return;
+  }
+  const doc = hovered.doc;
+  const preview = String(doc.body_markdown || '').replace(/\s+/g, ' ').trim();
+  const shell = document.querySelector('.graph-canvas-shell');
+  const shellRect = shell ? shell.getBoundingClientRect() : { width: 0, height: 0 };
+  const cardWidth = 280;
+  const cardHeight = 124;
+  const left = Math.max(18, Math.min(hovered.x + 18, shellRect.width - cardWidth - 18));
+  const top = Math.max(18, Math.min(hovered.y - cardHeight / 2, shellRect.height - cardHeight - 18));
+  card.style.left = `${left}px`;
+  card.style.top = `${top}px`;
+  card.innerHTML = `<div class="graph-hover-title">${escapeHtml(doc.title || doc.id)}</div><div class="graph-hover-meta">${escapeHtml(doc.family)} &middot; ${escapeHtml(doc.trust_zone)} trust</div><div class="graph-hover-body">${escapeHtml(preview ? `${preview.slice(0, 140)}${preview.length > 140 ? '...' : ''}` : doc.id)}</div>`;
+  card.classList.add('open');
+}
+
+function isMarkdownTableSeparator(line) {
+  return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line.trim());
+}
+function splitMarkdownTableRow(line) {
+  const normalized = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+  return normalized.split('|').map(cell => cell.trim());
+}
+function renderMarkdownTable(headers, rows) {
+  const headHtml = headers.map(header => `<th>${formatInlineMarkdown(header)}</th>`).join('');
+  const bodyHtml = rows.map(row => `<tr>${headers.map((_, index) => `<td>${formatInlineMarkdown(row[index] || '')}</td>`).join('')}</tr>`).join('');
+  return `<div class="graph-note-table-wrap"><table class="graph-note-table"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+}
+function renderMarkdownFragment(markdown) {
+  const embedded = stashSupportedHtmlEmbeds(markdown);
+  const htmlBlockByToken = new Map(embedded.htmlBlocks.map(item => [item.token, item.html]));
+  const source = embedded.source.replace(/\r\n/g, '\n');
+  const lines = source.split('\n');
+  const chunks = [];
+  let paragraph = [];
+  let listItems = [];
+  let orderedList = false;
+  let codeLines = [];
+  let codeLanguage = '';
+  let inCode = false;
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    chunks.push(`<p>${formatInlineMarkdown(paragraph.join(' '))}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listItems.length) return;
+    const tag = orderedList ? 'ol' : 'ul';
+    chunks.push(`<${tag}>${listItems.map(item => `<li>${formatInlineMarkdown(item)}</li>`).join('')}</${tag}>`);
+    listItems = [];
+    orderedList = false;
+  };
+  const flushCode = () => {
+    if (!codeLines.length) {
+      codeLanguage = '';
+      return;
+    }
+    const codeSource = codeLines.join('\n');
+    if (codeLanguage === 'mermaid') {
+      chunks.push(renderMermaidBlock(codeSource));
+    } else {
+      chunks.push(`<pre><code>${escapeHtml(codeSource)}</code></pre>`);
+    }
+    codeLines = [];
+    codeLanguage = '';
+  };
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].replace(/\t/g, '    ');
+    const trimmed = line.trim();
+    const nextTrimmed = index + 1 < lines.length ? lines[index + 1].trim() : '';
+
+    if (trimmed.startsWith('```')) {
+      const fenceLanguage = trimmed.slice(3).trim().toLowerCase();
+      flushParagraph();
+      flushList();
+      if (inCode) {
+        flushCode();
+        inCode = false;
+      } else {
+        inCode = true;
+        codeLines = [];
+        codeLanguage = fenceLanguage;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+    if (htmlBlockByToken.has(trimmed)) {
+      flushParagraph();
+      flushList();
+      flushCode();
+      chunks.push(htmlBlockByToken.get(trimmed));
+      continue;
+    }
+    const standaloneImageMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (standaloneImageMatch) {
+      flushParagraph();
+      flushList();
+      chunks.push(renderMarkdownImage(standaloneImageMatch[1], standaloneImageMatch[2]));
+      continue;
+    }
+    if (trimmed.includes('|') && nextTrimmed && isMarkdownTableSeparator(nextTrimmed)) {
+      flushParagraph();
+      flushList();
+      const headers = splitMarkdownTableRow(trimmed);
+      const rows = [];
+      index += 2;
+      while (index < lines.length) {
+        const tableLine = lines[index].trim();
+        if (!tableLine || !tableLine.includes('|')) {
+          index -= 1;
+          break;
+        }
+        rows.push(splitMarkdownTableRow(tableLine));
+        index += 1;
+      }
+      if (index >= lines.length) {
+        index = lines.length;
+      }
+      chunks.push(renderMarkdownTable(headers, rows));
+      continue;
+    }
+    if (/^---+$/.test(trimmed)) {
+      flushParagraph();
+      flushList();
+      chunks.push('<hr>');
+      continue;
+    }
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      flushParagraph();
+      flushList();
+      const level = Math.min(4, headingMatch[1].length + 2);
+      chunks.push(`<h${level}>${formatInlineMarkdown(headingMatch[2])}</h${level}>`);
+      continue;
+    }
+    const quoteMatch = trimmed.match(/^>\s?(.*)$/);
+    if (quoteMatch) {
+      flushParagraph();
+      flushList();
+      chunks.push(`<blockquote>${formatInlineMarkdown(quoteMatch[1])}</blockquote>`);
+      continue;
+    }
+    const orderedMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+    if (orderedMatch) {
+      flushParagraph();
+      if (listItems.length && !orderedList) flushList();
+      orderedList = true;
+      listItems.push(orderedMatch[1]);
+      continue;
+    }
+    const bulletMatch = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bulletMatch) {
+      flushParagraph();
+      if (listItems.length && orderedList) flushList();
+      orderedList = false;
+      listItems.push(bulletMatch[1]);
+      continue;
+    }
+    paragraph.push(trimmed);
+  }
+
+  flushParagraph();
+  flushList();
+  flushCode();
+  return chunks.join('') || '<p class="muted">No markdown body available for this document.</p>';
+}
+function renderInteractiveChipSections(doc) {
+  const groups = [
+    { label: 'Issues', kind: 'issue', values: doc.issues },
+    { label: 'Knowledge', kind: 'knowledge', values: doc.knowledge_ids },
+    { label: 'Skills', kind: 'skill', values: doc.skill_refs },
+    { label: 'Templates', kind: 'template', values: doc.template_refs },
+    { label: 'Releases', kind: 'release', values: doc.release_refs },
+    { label: 'Lanes', kind: 'lane', values: doc.lane_refs },
+  ].filter(group => group.values && group.values.length);
+
+  return groups.map(group => {
+    const chips = group.values.map(value => {
+      const count = getScopeDocIds(group.kind, value).length;
+      const active = graphState.scopeFilter && graphState.scopeFilter.kind === group.kind && graphState.scopeFilter.value === value;
+      return `<button class="graph-chip${active ? ' active' : ''}" title="${escapeHtml(value)}" onclick="activateGraphScope('${group.kind}', ${JSON.stringify(value)})"><span>${escapeHtml(getScopeValueLabel(group.kind, value))}</span><small>${count}</small></button>`;
+    }).join('');
+    return `<div class="graph-chip-section"><div class="graph-chip-label">${escapeHtml(group.label)}</div><div class="graph-chip-group">${chips}</div></div>`;
+  }).join('');
+}
+
+function renderGraphFocusActions() {
+  const canBack = graphState.historyIndex > 0;
+  const canForward = graphState.historyIndex >= 0 && graphState.historyIndex < graphState.history.length - 1;
+  const overlayLabel = graphState.overlayMode === 'compact' ? 'Expand' : 'Compact';
+  const collapseLabel = graphState.overlayCollapsed ? '&#9662;' : '&#9652;';
+  const collapseTitle = graphState.overlayCollapsed ? 'Expand Graph Focus' : 'Collapse Graph Focus';
+  return `<div class="graph-focus-actions"><button class="graph-history-btn" onclick="navigateGraphHistory(-1)" ${canBack ? '' : 'disabled'}>&larr;</button><button class="graph-history-btn" onclick="navigateGraphHistory(1)" ${canForward ? '' : 'disabled'}>&rarr;</button><button class="graph-focus-toggle" title="${collapseTitle}" onclick="toggleGraphFocusCollapsed()">${collapseLabel}</button><button class="graph-overlay-btn" onclick="toggleGraphOverlayMode()">${overlayLabel}</button><button class="graph-focus-minimize" title="Minimize Graph Focus" onclick="toggleGraphFocusMinimized(true)">&#8722;</button><button class="graph-focus-close" onclick="clearGraphSelection()">&times;</button></div>`;
+}
+
+function renderGraphDetail() {
+  syncGraphOverlayMode();
+  const overlay = document.getElementById('graph-focus-overlay');
+  const panel = document.getElementById('graph-focus-panel');
+  if (graphState.overlayMinimized) {
+    if (overlay) overlay.classList.remove('hidden');
+    const focusId = getGraphFocusId();
+    const doc = focusId && docById[focusId] ? docById[focusId] : null;
+    const color = doc ? (FAMILY_COLORS[doc.family] || '#5f89ff') : '#5f89ff';
+    const glyph = doc ? (FAMILY_GLYPHS[doc.family] || 'A') : 'A';
+    const label = doc ? escapeHtml(doc.title || doc.id) : 'Graph Focus';
+    panel.classList.add('minimized');
+    panel.innerHTML = `<button class="graph-focus-peek" onclick="openGraphFocusPeek(event)" title="Open Graph Focus"><span class="graph-focus-peek-glyph" style="background:${color}">${glyph}</span><span>${label}</span></button>`;
+    syncGraphSettings();
+    requestAnimationFrame(syncGraphFocusPosition);
+    return;
+  }
+  panel.classList.remove('minimized');
+  panel.classList.toggle('collapsed', !!graphState.overlayCollapsed);
+  const visibleIds = getVisibleDocIds();
+  const visibleEdges = getVisibleDocEdges(visibleIds);
+  const visibleAllEdges = docEdges.filter(edge => visibleIds.has(edge.source) && visibleIds.has(edge.target));
+  normalizeGraphFocus(visibleIds);
+  const focusId = getGraphFocusId();
+
+  if (!focusId || !docById[focusId]) {
+    if (overlay) overlay.classList.add('hidden');
+    panel.innerHTML = '';
+    syncGraphSettings();
+    return;
+  }
+
+  if (overlay) overlay.classList.remove('hidden');
+  const doc = docById[focusId];
+  const color = FAMILY_COLORS[doc.family] || '#8b949e';
+  const outgoing = sortNeighbors(visibleEdges.filter(edge => edge.source === focusId).map(edge => ({ id: edge.target, type: edge.type, direction: 'out' })));
+  const incoming = sortNeighbors(visibleEdges.filter(edge => edge.target === focusId).map(edge => ({ id: edge.source, type: edge.type, direction: 'in' })));
+  const visibleNeighborIds = new Set([...outgoing, ...incoming].map(item => item.id));
+  const allNeighborIds = new Set(visibleAllEdges.flatMap(edge => edge.source === focusId ? [edge.target] : (edge.target === focusId ? [edge.source] : [])));
+  const hiddenNeighborCount = Math.max(0, allNeighborIds.size - visibleNeighborIds.size);
+  const previewLabel = graphState.selectedId ? 'Locked Selection' : 'Hover Preview';
+  const filterLabel = graphState.edgeFilter === 'all' ? 'All link types' : (graphState.edgeFilter === 'references_path' ? 'Path links' : 'Wiki links');
+  const bodyPreview = String(doc.body_markdown || '').replace(/\s+/g, ' ').trim();
+  const summaryText = bodyPreview ? `${bodyPreview.slice(0, 220)}${bodyPreview.length > 220 ? '...' : ''}` : 'No markdown body available for this document.';
+  const chipSections = renderInteractiveChipSections(doc);
+  const historyStrip = renderGraphHistoryStrip();
+
+  const renderNeighborList = (items, title) => {
+    if (!items.length) return '';
+    let block = `<h3>${title} (${items.length})</h3><ul>`;
+    items.slice(0, 12).forEach(item => {
+      const target = docById[item.id];
+      const label = target ? (target.title || target.id) : item.id;
+      block += `<li><code>${escapeHtml(item.type)}</code> &middot; <span class="wiki-link" onclick="focusGraphNode('${item.id}')">${escapeHtml(label)}</span></li>`;
+    });
+    block += '</ul>';
+    return block;
+  };
+
+  const header = `
+    <div class="graph-focus-drag-bar" title="Drag Graph Focus"><span></span></div>
+    <div class="graph-focus-header">
+      <div class="graph-focus-icon" style="background:${color}">${escapeHtml(FAMILY_GLYPHS[doc.family] || 'M')}</div>
+      <div class="graph-focus-meta">
+        <div class="graph-focus-kicker">${escapeHtml(doc.family)}</div>
+        <div class="graph-focus-doc-title">${escapeHtml(doc.title || doc.id)}</div>
+        <div class="graph-focus-subtle">${escapeHtml(previewLabel)} &middot; ${escapeHtml(folderGroupForDoc(doc))}</div>
+      </div>
+      ${renderGraphFocusActions()}
+    </div>`;
+
+  if (graphState.overlayCollapsed) {
+    panel.innerHTML = `${header}`;
+    syncGraphSettings();
+    requestAnimationFrame(syncGraphFocusPosition);
+    return;
+  }
+
+  if (graphState.detailMode === 'full') {
+    panel.innerHTML = `${header}
+      <div class="graph-detail-card">
+        <div class="graph-badge-row">
+          <span class="graph-pill">${escapeHtml(doc.role)}</span>
+          <span class="graph-pill">trust ${escapeHtml(doc.trust_zone)}</span>
+          <span class="graph-pill">degree ${nodeStats[focusId]?.degree || 0}</span>
+          <span class="graph-pill">${escapeHtml(filterLabel)}</span>
+        </div>
+        ${historyStrip}
+        ${chipSections}
+        <div class="full-mode-title">Full Document</div>
+        <p><code>${escapeHtml(doc.id)}</code></p>
+        <div class="graph-note-prose">${renderMarkdownFragment(doc.body_markdown)}</div>
+      </div>
+      <div class="graph-focus-footer">
+        <button class="inline-btn" onclick="showGraphSummary()">Back to Summary</button>
+        <button class="inline-btn" onclick="addAtlasAskSource('${focusId}')">Add to Ask Sources</button>
+        <span class="muted">Inline view loaded from embedded atlas content</span>
+      </div>`;
+    scheduleMermaidRender(panel);
+    syncGraphSettings();
+    requestAnimationFrame(syncGraphFocusPosition);
+    return;
+  }
+
+  let summaryHtml = `<div class="graph-badge-row"><span class="graph-pill"><span class="dot" style="background:${color}"></span>${escapeHtml(doc.family)}</span><span class="graph-pill">${escapeHtml(previewLabel)}</span><span class="graph-pill">degree ${nodeStats[focusId]?.degree || 0}</span><span class="graph-pill">${escapeHtml(filterLabel)}</span></div>`;
+  summaryHtml += `<p><code>${escapeHtml(doc.id)}</code></p>`;
+  summaryHtml += `<p class="muted">Trust zone: <code>${escapeHtml(doc.trust_zone)}</code></p>`;
+  summaryHtml += `<p>${escapeHtml(summaryText)}</p>`;
+  summaryHtml += historyStrip;
+  summaryHtml += chipSections;
+  summaryHtml += renderNeighborList(outgoing, 'Outgoing Linked Docs');
+  summaryHtml += renderNeighborList(incoming, 'Incoming Linked Docs');
+  if (hiddenNeighborCount > 0) {
+    summaryHtml += `<p class="muted">${hiddenNeighborCount} linked docs are hidden by the active edge filter.</p>`;
+  }
+
+  panel.innerHTML = `${header}
+    <div class="graph-detail-card">${summaryHtml}</div>
+    <div class="graph-focus-footer">
+      <button class="inline-btn" onclick="openGraphFullDetail('${focusId}')">Open Full Detail</button>
+      <button class="inline-btn" onclick="centerGraphOnSelection()">Center Node</button>
+      <button class="inline-btn" onclick="fitGraphGroup()">Fit Group</button>
+      <button class="inline-btn" onclick="addAtlasAskSource('${focusId}')">Add to Ask Sources</button>
+    </div>`;
+  syncGraphSettings();
+  requestAnimationFrame(syncGraphFocusPosition);
+}
+
+function cloneGraphPositions(sourcePositions, visibleDocs, resolveGroup) {
+  if (!sourcePositions) return null;
+  const cloned = {};
+  for (const doc of visibleDocs) {
+    const existing = sourcePositions[doc.id];
+    if (!existing) return null;
+    cloned[doc.id] = {
+      x: existing.x,
+      y: existing.y,
+      vx: 0,
+      vy: 0,
+      group: resolveGroup(doc),
+    };
+  }
+  return cloned;
+}
+
+function rememberGraphLayout(layoutKey, positions) {
+  const snapshot = {};
+  Object.keys(positions).forEach(id => {
+    const pos = positions[id];
+    snapshot[id] = { x: pos.x, y: pos.y, vx: 0, vy: 0, group: pos.group };
+  });
+  graphState.layoutCache[layoutKey] = snapshot;
+  const existingIndex = graphState.layoutCacheOrder.indexOf(layoutKey);
+  if (existingIndex !== -1) {
+    graphState.layoutCacheOrder.splice(existingIndex, 1);
+  }
+  graphState.layoutCacheOrder.push(layoutKey);
+  while (graphState.layoutCacheOrder.length > 14) {
+    const evictedKey = graphState.layoutCacheOrder.shift();
+    if (evictedKey) delete graphState.layoutCache[evictedKey];
+  }
+}
+
+function getGraphLayoutIterations(nodeCount, warmed) {
+  if (warmed) {
+    if (nodeCount >= 320) return 12;
+    if (nodeCount >= 180) return 16;
+    if (nodeCount >= 80) return 24;
+    return 32;
+  }
+  if (nodeCount >= 320) return 28;
+  if (nodeCount >= 180) return 40;
+  if (nodeCount >= 80) return 60;
+  return 90;
+}
+
+function ensureGraphLayout(width, height, visibleDocs, visibleEdges) {
+  const scopeKey = graphState.scopeFilter ? `${graphState.scopeFilter.kind}:${graphState.scopeFilter.value}` : 'noscope';
+  const layoutKey = `${width}x${height}:${graphState.groupMode}:${graphState.familyFilter || 'all'}:${scopeKey}:${visibleDocs.length}`;
+  const resolveGroup = (doc) => graphState.groupMode === 'folder' ? folderGroupForDoc(doc) : doc.family;
+  if (graphState.layoutKey === layoutKey && graphState.positions) {
+    return;
+  }
+  const cachedPositions = graphState.layoutCache[layoutKey];
+  if (cachedPositions) {
+    graphState.positions = cloneGraphPositions(cachedPositions, visibleDocs, resolveGroup);
+    graphState.layoutKey = layoutKey;
+    return;
+  }
+  const groupBy = {};
+  visibleDocs.forEach(doc => {
+    const group = resolveGroup(doc);
+    (groupBy[group] = groupBy[group] || []).push(doc);
+  });
+  const groupNames = Object.keys(groupBy).sort();
+  const clusterRadius = Math.min(width, height) * 0.29;
+  const centers = {};
+  groupNames.forEach((group, index) => {
+    const angle = (index / Math.max(groupNames.length, 1)) * Math.PI * 2;
+    centers[group] = {
+      x: width / 2 + clusterRadius * Math.cos(angle),
+      y: height / 2 + clusterRadius * Math.sin(angle),
+    };
+  });
+
+  const allLayoutKey = `${width}x${height}:${graphState.groupMode}:all:noscope:${docs.length}`;
+  let positions = cloneGraphPositions(graphState.layoutCache[allLayoutKey], visibleDocs, resolveGroup);
+  let warmed = Boolean(positions);
+  if (!positions && graphState.positions) {
+    positions = cloneGraphPositions(graphState.positions, visibleDocs, resolveGroup);
+    warmed = Boolean(positions);
+  }
+  if (!positions) {
+    positions = {};
+    groupNames.forEach(group => {
+      const members = groupBy[group].slice().sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id));
+      const memberRadius = Math.max(34, Math.min(140, 18 + Math.sqrt(members.length) * 12));
+      members.forEach((doc, index) => {
+        const angle = (index / Math.max(members.length, 1)) * Math.PI * 2;
+        const seed = hashString(doc.id);
+        const jitterX = ((seed % 17) - 8) * 1.8;
+        const jitterY = (((Math.floor(seed / 17)) % 17) - 8) * 1.8;
+        positions[doc.id] = {
+          x: centers[group].x + memberRadius * Math.cos(angle) + jitterX,
+          y: centers[group].y + memberRadius * Math.sin(angle) + jitterY,
+          vx: 0,
+          vy: 0,
+          group,
+        };
+      });
+    });
+  }
+
+  const iterations = getGraphLayoutIterations(visibleDocs.length, warmed);
+  for (let iter = 0; iter < iterations; iter += 1) {
+    for (let i = 0; i < visibleDocs.length; i += 1) {
+      for (let j = i + 1; j < visibleDocs.length; j += 1) {
+        const a = positions[visibleDocs[i].id];
+        const b = positions[visibleDocs[j].id];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+        const force = 300 / (distance * distance);
+        a.vx -= (dx / distance) * force;
+        a.vy -= (dy / distance) * force;
+        b.vx += (dx / distance) * force;
+        b.vy += (dy / distance) * force;
+      }
+    }
+
+    visibleEdges.forEach(edge => {
+      const a = positions[edge.source];
+      const b = positions[edge.target];
+      let dx = b.x - a.x;
+      let dy = b.y - a.y;
+      const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+      const force = (distance - 78) * 0.009;
+      a.vx += (dx / distance) * force;
+      a.vy += (dy / distance) * force;
+      b.vx -= (dx / distance) * force;
+      b.vy -= (dy / distance) * force;
+    });
+
+    visibleDocs.forEach(doc => {
+      const pos = positions[doc.id];
+      const target = centers[pos.group];
+      pos.vx += (target.x - pos.x) * 0.012;
+      pos.vy += (target.y - pos.y) * 0.012;
+      pos.vx += (width / 2 - pos.x) * 0.0008;
+      pos.vy += (height / 2 - pos.y) * 0.0008;
+      pos.vx *= 0.80;
+      pos.vy *= 0.80;
+      pos.x += pos.vx;
+      pos.y += pos.vy;
+      pos.x = Math.max(26, Math.min(width - 26, pos.x));
+      pos.y = Math.max(26, Math.min(height - 26, pos.y));
+    });
+  }
+
+  graphState.positions = positions;
+  graphState.layoutKey = layoutKey;
+  rememberGraphLayout(layoutKey, positions);
+}
+
+function drawGraph() {
+  const visibleDocs = getVisibleDocs();
+  const visibleIds = new Set(visibleDocs.map(doc => doc.id));
+  normalizeGraphFocus(visibleIds);
+  const visibleEdges = getVisibleDocEdges(visibleIds);
+
+  const canvas = document.getElementById('graph-canvas');
+  const shell = canvas.parentElement;
+  const width = Math.max(540, shell.clientWidth - 28);
+  const height = Math.max(420, shell.clientHeight - 28);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  ensureGraphLayout(width, height, visibleDocs, visibleEdges);
+
+  const focusId = getGraphFocusId();
+  const neighborIds = focusId ? getNeighborIds(focusId, visibleEdges) : new Set();
+  const viewport = getGraphViewportMetrics(width, height);
+  syncGraphOverlayMode();
+  syncGraphToolbar();
+  const selectedBasePos = graphState.selectedId ? graphState.positions[graphState.selectedId] : null;
+  const shouldFitFiltered = (graphState.familyFilter || graphState.scopeFilter) && !focusId && !graphState.isDragging;
+  if (graphState.fitVisibleRequested && !graphState.isDragging) {
+    const bounds = computePositionBounds(visibleDocs);
+    if (bounds) {
+      const paddingX = 120;
+      const paddingY = 120;
+      const fitZoomX = viewport.usableWidth / (bounds.width + paddingX);
+      const fitZoomY = viewport.usableHeight / (bounds.height + paddingY);
+      graphState.targetZoom = Math.max(0.82, Math.min(1.52, fitZoomX, fitZoomY));
+      const fit = computePanForTargetCenter(
+        bounds.centerX,
+        bounds.centerY,
+        viewport.centerX - Math.min(28, viewport.overlayWidth * 0.05),
+        viewport.centerY,
+        width,
+        height,
+        graphState.targetZoom,
+      );
+      graphState.targetPanX = fit.panX;
+      graphState.targetPanY = fit.panY;
+    }
+    graphState.fitVisibleRequested = false;
+  } else if (graphState.autoFocus && selectedBasePos && !graphState.manualViewport) {
+    const focusOffsetX = viewport.overlayWidth ? Math.min(Math.max(180, viewport.overlayWidth * 0.55), viewport.overlayWidth * 0.78) : 0;
+    graphState.targetZoom = 1.14;
+    const focused = computePanForTargetCenter(
+      selectedBasePos.x,
+      selectedBasePos.y,
+      viewport.centerX - focusOffsetX * 0.45,
+      viewport.centerY,
+      width,
+      height,
+      graphState.targetZoom,
+    );
+    graphState.targetPanX = focused.panX;
+    graphState.targetPanY = focused.panY;
+  } else if (shouldFitFiltered && !graphState.manualViewport) {
+    const bounds = computePositionBounds(visibleDocs);
+    if (bounds) {
+      const paddingX = 120;
+      const paddingY = 120;
+      const fitZoomX = viewport.usableWidth / (bounds.width + paddingX);
+      const fitZoomY = viewport.usableHeight / (bounds.height + paddingY);
+      graphState.targetZoom = Math.max(0.84, Math.min(1.48, fitZoomX, fitZoomY));
+      const fit = computePanForTargetCenter(
+        bounds.centerX,
+        bounds.centerY,
+        viewport.centerX - Math.min(32, viewport.overlayWidth * 0.06),
+        viewport.centerY,
+        width,
+        height,
+        graphState.targetZoom,
+      );
+      graphState.targetPanX = fit.panX;
+      graphState.targetPanY = fit.panY;
+    }
+  } else if (!focusId && !graphState.isDragging && !graphState.manualViewport) {
+    graphState.targetZoom = 1;
+    graphState.targetPanX = 0;
+    graphState.targetPanY = 0;
+  }
+  applyCameraStep();
+
+  graphState.renderedPositions = visibleDocs.map(doc => {
+    const raw = graphState.positions[doc.id];
+    const animated = getDisplayPosition(doc.id, raw);
+    const screen = worldToScreen(animated.x, animated.y, width, height);
+    const degree = nodeStats[doc.id]?.degree || 0;
+    return {
+      id: doc.id,
+      x: screen.x,
+      y: screen.y,
+      radius: Math.max(5.2, Math.min(16.5, (4.3 + degree * 0.55) * Math.pow(graphState.zoom, 0.12))),
+      color: FAMILY_COLORS[doc.family] || '#8b949e',
+      degree,
+      glyph: FAMILY_GLYPHS[doc.family] || 'M',
+      doc,
+    };
+  });
+
+  const renderedById = {};
+  graphState.renderedPositions.forEach(pos => { renderedById[pos.id] = pos; });
+  renderGraphHoverCard();
+
+  visibleEdges.forEach(edge => {
+    const a = renderedById[edge.source];
+    const b = renderedById[edge.target];
+    if (!a || !b) return;
+    let alpha = 0.16;
+    if (focusId) {
+      const touchesFocus = edge.source === focusId || edge.target === focusId;
+      const connectsNeighbors = neighborIds.has(edge.source) && neighborIds.has(edge.target);
+      alpha = touchesFocus ? 0.90 : (connectsNeighbors ? 0.28 : 0.05);
+    }
+    const baseColor = GRAPH_EDGE_COLORS[edge.type] || 'rgba(126,140,158,0.24)';
+    ctx.strokeStyle = baseColor.replace(/0\.[0-9]+\)$/, `${alpha})`);
+    ctx.lineWidth = ((focusId && (edge.source === focusId || edge.target === focusId)) ? 2.0 : 0.95) * Math.pow(graphState.zoom, 0.08);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  });
+
+  graphState.renderedPositions.forEach(pos => {
+    const isFocus = focusId === pos.id;
+    const isNeighbor = neighborIds.has(pos.id);
+    let alpha = 0.92;
+    if (focusId) {
+      alpha = isFocus ? 1 : (isNeighbor ? 0.96 : 0.16);
+    }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, pos.radius, 0, Math.PI * 2);
+    ctx.fillStyle = pos.color + Math.round(alpha * 255).toString(16).padStart(2, '0');
+    ctx.shadowColor = isFocus ? 'rgba(49,86,201,0.34)' : 'rgba(15,23,42,0.10)';
+    ctx.shadowBlur = isFocus ? 16 : 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    if (isFocus) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.98)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    } else if (isNeighbor) {
+      ctx.strokeStyle = 'rgba(31,42,55,0.32)';
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = 'rgba(255,255,255,0.98)';
+    ctx.font = `${Math.max(8, Math.min(11, pos.radius))}px -apple-system,sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(pos.glyph, pos.x, pos.y + 0.5);
+    ctx.restore();
+
+    if (isFocus || pos.degree >= 8 || (isNeighbor && pos.degree >= 4)) {
+      ctx.save();
+      ctx.fillStyle = isFocus ? 'rgba(31,42,55,0.96)' : 'rgba(31,42,55,0.76)';
+      ctx.font = isFocus ? '11px -apple-system,sans-serif' : '10px -apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(255,255,255,0.90)';
+      ctx.shadowBlur = 7;
+      let label = (pos.doc.title || pos.id).replace(/[_-]/g, ' ');
+      if (label.length > 28) label = label.substring(0, 26) + '...';
+      ctx.fillText(label, pos.x, pos.y - pos.radius - 7);
+      ctx.restore();
+    }
+  });
+}
+function getGraphCanvasPoint(event) {
+  const canvas = document.getElementById('graph-canvas');
+  const rect = canvas.getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+}
+
+function hitTestGraph(point) {
+  for (const pos of graphState.renderedPositions) {
+    const dx = point.x - pos.x;
+    const dy = point.y - pos.y;
+    if (dx * dx + dy * dy < (pos.radius + 8) * (pos.radius + 8)) {
+      return pos.id;
+    }
+  }
+  return null;
+}
+
+function startGraphAnimation() {
+  if (graphState.animationHandle) return;
+  const tick = (ts) => {
+    if (!document.getElementById('panel-graph').classList.contains('active')) {
+      graphState.animationHandle = null;
+      graphState.lastFrameTs = null;
+      return;
+    }
+    if (graphState.lastFrameTs === null) {
+      graphState.lastFrameTs = ts;
+      drawGraph();
+    }
+    const delta = ts - graphState.lastFrameTs;
+    if (delta >= GRAPH_FRAME_MS) {
+      graphState.motionTime += delta;
+      graphState.lastFrameTs = ts;
+      drawGraph();
+    }
+    graphState.animationHandle = requestAnimationFrame(tick);
+  };
+  graphState.animationHandle = requestAnimationFrame(tick);
+}
+
+function stopGraphAnimation() {
+  if (graphState.animationHandle) {
+    cancelAnimationFrame(graphState.animationHandle);
+    graphState.animationHandle = null;
+  }
+  graphState.lastFrameTs = null;
+}
+
+(function initGraphControls() {
+  const canvas = document.getElementById('graph-canvas');
+  document.getElementById('graph-search').addEventListener('input', event => {
+    graphState.toolbarMinimized = false;
+    syncGraphToolbar();
+    renderGraphSearchResults(event.target.value);
+  });
+  document.getElementById('graph-group-family').onclick = () => {
+    graphState.groupMode = 'family';
+    graphState.layoutKey = null;
+    graphState.manualViewport = false;
+    graphState.fitVisibleRequested = true;
+    document.getElementById('graph-group-family').classList.add('active');
+    document.getElementById('graph-group-folder').classList.remove('active');
+    drawGraph();
+  };
+  document.getElementById('graph-group-folder').onclick = () => {
+    graphState.groupMode = 'folder';
+    graphState.layoutKey = null;
+    graphState.manualViewport = false;
+    graphState.fitVisibleRequested = true;
+    document.getElementById('graph-group-folder').classList.add('active');
+    document.getElementById('graph-group-family').classList.remove('active');
+    drawGraph();
+  };
+  document.getElementById('graph-clear-focus').onclick = () => {
+    resetGraphViewport();
+    clearGraphSelection(true);
+  };
+  document.getElementById('graph-zoom-in').onclick = () => {
+    setManualViewport();
+    graphState.targetZoom = Math.min(2.6, graphState.targetZoom * 1.14);
+    drawGraph();
+  };
+  document.getElementById('graph-zoom-out').onclick = () => {
+    setManualViewport();
+    graphState.targetZoom = Math.max(0.65, graphState.targetZoom * 0.88);
+    drawGraph();
+  };
+  document.getElementById('graph-reset-view').onclick = () => {
+    resetGraphViewport();
+    drawGraph();
+  };
+  document.getElementById('graph-fit-visible').onclick = () => {
+    fitVisibleGraph();
+  };
+  canvas.onmousedown = event => {
+    const point = getGraphCanvasPoint(event);
+    if (hitTestGraph(point)) return;
+    graphState.isDragging = true;
+    graphState.didDrag = false;
+    graphState.dragLastPoint = point;
+    canvas.classList.add('dragging');
+    setManualViewport();
+  };
+  canvas.onclick = event => {
+    if (graphState.didDrag) {
+      graphState.didDrag = false;
+      return;
+    }
+    const targetId = hitTestGraph(getGraphCanvasPoint(event));
+    if (targetId) {
+      lockGraphNode(targetId);
+      return;
+    }
+    clearGraphSelection();
+  };
+  canvas.onmousemove = event => {
+    const point = getGraphCanvasPoint(event);
+    if (graphState.isDragging && graphState.dragLastPoint) {
+      const dx = point.x - graphState.dragLastPoint.x;
+      const dy = point.y - graphState.dragLastPoint.y;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) graphState.didDrag = true;
+      graphState.panX += dx;
+      graphState.panY += dy;
+      graphState.targetPanX = graphState.panX;
+      graphState.targetPanY = graphState.panY;
+      graphState.dragLastPoint = point;
+      drawGraph();
+      return;
+    }
+    if (graphState.selectedId) return;
+    const hovered = hitTestGraph(point);
+    if (hovered !== graphState.hoveredId) {
+      graphState.hoveredId = hovered;
+      renderGraphDetail();
+      drawGraph();
+    }
+  };
+  canvas.onmouseup = () => {
+    graphState.isDragging = false;
+    graphState.dragLastPoint = null;
+    canvas.classList.remove('dragging');
+  };
+  canvas.onmouseleave = () => {
+    graphState.isDragging = false;
+    graphState.dragLastPoint = null;
+    canvas.classList.remove('dragging');
+    if (!graphState.selectedId && graphState.hoveredId) {
+      graphState.hoveredId = null;
+      renderGraphDetail();
+      drawGraph();
+    }
+  };
+  canvas.onwheel = event => {
+    event.preventDefault();
+    setManualViewport();
+    const factor = event.deltaY < 0 ? 1.12 : 0.89;
+    graphState.targetZoom = Math.max(0.65, Math.min(2.6, graphState.targetZoom * factor));
+    drawGraph();
+  };
+  window.addEventListener('mouseup', () => {
+    graphState.isDragging = false;
+    graphState.dragLastPoint = null;
+    canvas.classList.remove('dragging');
+  });
+  document.getElementById('graph-search').addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeGraphSearchResults(true);
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      moveGraphSearchSelection(1);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveGraphSearchSelection(-1);
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitGraphSearchSelection();
+    }
+  });
+  window.addEventListener('resize', () => {
+    graphState.layoutKey = null;
+    if (document.getElementById('panel-graph').classList.contains('active')) {
+      drawGraph();
+      syncGraphOverlayPositions();
+      renderGraphFamilyFilters();
+    }
+  });
+  buildGraphLegend(getVisibleDocs());
+  renderGraphFamilyFilters();
+  renderGraphEdgeFilters();
+  renderGraphScope();
+  syncGraphToolbar();
+  renderGraphDetail();
+  syncGraphSettings();
+  updateZoomBadge();
+  syncAtlasAskPosition();
+  syncGraphOverlayPositions();
+})();
+</script>
+</body>
+</html>

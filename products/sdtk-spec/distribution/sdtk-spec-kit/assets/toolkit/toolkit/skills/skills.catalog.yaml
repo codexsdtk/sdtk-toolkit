@@ -1,0 +1,330 @@
+schema_version: 1
+skills:
+  - name: sdtk-pm
+    phase: pm
+    role_tag: /pm
+    use_when: Start feature scope or produce PM planning artifacts before BA or ARCH handoff.
+    primary_inputs:
+      - source requirements
+      - docs/product/PROJECT_INITIATION_[FEATURE_KEY].md
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+    primary_outputs:
+      - docs/product/PROJECT_INITIATION_[FEATURE_KEY].md
+      - docs/product/PRD_[FEATURE_KEY].md
+      - docs/product/BACKLOG_[FEATURE_KEY].md
+    hard_gates:
+      - Do not hand off without updating SHARED_PLANNING.md and QUALITY_CHECKLIST.md.
+      - Keep unresolved OQ items explicit instead of silently deciding for other roles.
+    references: []
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: []
+    pack: core
+
+  - name: sdtk-ba
+    phase: ba
+    role_tag: /ba
+    use_when: Convert PM initiation into a BA spec with glossary, BR, UC, AC, NFR, and traceability.
+    primary_inputs:
+      - docs/product/PROJECT_INITIATION_[FEATURE_KEY].md
+      - source requirements
+    primary_outputs:
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+    hard_gates:
+      - Do not close BA output without explicit REQ to UC or BR or AC traceability.
+      - Keep unresolved OQ items visible for PM resolution.
+    references: []
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-pm]
+    pack: core
+
+  - name: sdtk-arch
+    phase: arch
+    role_tag: /arch
+    use_when: Convert BA spec and PM backlog into architecture, API, DB, and UI design artifacts.
+    primary_inputs:
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+      - docs/product/PRD_[FEATURE_KEY].md
+      - docs/product/BACKLOG_[FEATURE_KEY].md
+    primary_outputs:
+      - docs/architecture/ARCH_DESIGN_[FEATURE_KEY].md
+      - docs/api/[FeaturePascal]_API.yaml
+      - docs/api/[FEATURE_KEY]_ENDPOINTS.md
+      - docs/api/[FEATURE_KEY]_API_DESIGN_DETAIL.md
+      - docs/database/DATABASE_SPEC_[FEATURE_KEY].md
+      - docs/design/DESIGN_LAYOUT_[FEATURE_KEY].md
+      - docs/specs/[FEATURE_KEY]_FLOW_ACTION_SPEC.md
+    hard_gates:
+      - For UI scope, DESIGN_LAYOUT must exist before FLOW_ACTION_SPEC.
+      - Keep API, DB, and screen outputs aligned to the same source requirements.
+    references:
+      - toolkit/templates/docs/api/YAML_CREATION_RULES.md
+      - toolkit/templates/docs/api/API_DESIGN_FLOWCHART_CREATION_RULES.md
+      - toolkit/templates/docs/specs/FLOW_ACTION_SPEC_CREATION_RULES.md
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-pm, sdtk-ba]
+    pack: core
+
+  - name: sdtk-dev
+    phase: dev
+    role_tag: /dev
+    use_when: Turn approved architecture and backlog into an implementation plan, readiness decision, and formal SDTK-CODE handoff.
+    primary_inputs:
+      - docs/architecture/ARCH_DESIGN_[FEATURE_KEY].md
+      - docs/product/BACKLOG_[FEATURE_KEY].md
+      - sdtk-spec.config.json
+    primary_outputs:
+      - docs/dev/FEATURE_IMPL_PLAN_[FEATURE_KEY].md
+      - docs/dev/CODE_HANDOFF_[FEATURE_KEY].json
+    hard_gates:
+      - Do not emit READY_FOR_SDTK_CODE before the current FEATURE_IMPL_PLAN slice is approved.
+      - Do not hide blockers; BLOCKED_FOR_SDTK_CODE must keep blockers explicit.
+    references: []
+    prompts:
+      - toolkit/skills/sdtk-dev/prompts/implementer.md
+      - toolkit/skills/sdtk-dev/prompts/spec-reviewer.md
+      - toolkit/skills/sdtk-dev/prompts/code-quality-reviewer.md
+    scripts:
+      - toolkit/scripts/generate-code-handoff.ps1
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-arch]
+    pack: core
+
+  - name: sdtk-qa
+    phase: qa
+    role_tag: /qa
+    use_when: Validate downstream implementation evidence against specs, run quality gates, and produce a release decision.
+    primary_inputs:
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+      - docs/product/PRD_[FEATURE_KEY].md
+      - docs/product/BACKLOG_[FEATURE_KEY].md
+      - docs/dev/FEATURE_IMPL_PLAN_[FEATURE_KEY].md
+      - docs/dev/CODE_HANDOFF_[FEATURE_KEY].json
+    primary_outputs:
+      - docs/qa/QA_RELEASE_REPORT_[FEATURE_KEY].md
+      - docs/qa/[FEATURE_KEY]_TEST_CASE.md
+    hard_gates:
+      - QA handoff is blocked until downstream implementation evidence exists, normally from SDTK-CODE.
+      - Do not issue APPROVED without fresh verification evidence.
+    references: []
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-dev]
+    pack: core
+
+  - name: sdtk-orchestrator
+    phase: orchestration
+    role_tag: /orchestrator
+    use_when: Coordinate the full six-phase workflow and keep the default /dev -> SDTK-CODE -> /qa bridge in order.
+    primary_inputs:
+      - feature key
+      - feature name
+      - sdtk-spec.config.json
+      - SHARED_PLANNING.md
+      - QUALITY_CHECKLIST.md
+    primary_outputs:
+      - phase handoffs
+      - updated SHARED_PLANNING.md
+      - updated QUALITY_CHECKLIST.md
+    hard_gates:
+      - Do not skip mandatory PM or BA or ARCH or DEV or QA phases.
+      - Do not hand off the next phase without evidence from the current phase.
+    references: []
+    prompts: []
+    scripts:
+      - toolkit/scripts/init-feature.ps1
+    runtime_support: [claude, codex]
+    dependencies: []
+    pack: core
+
+  - name: sdtk-mailbox-dispatch
+    phase: orchestration
+    role_tag: /mailbox-dispatch
+    use_when: Delegate one bounded controller-owned phase to Claude or Codex while preserving exact include/exclude boundaries, formal artifact review, and a default post-issue retrospective.
+    primary_inputs:
+      - issue spec or plan artifacts
+      - toolkit/templates/mailbox/AGENT_TASK_TEMPLATE.md
+      - toolkit/templates/mailbox/AGENT_REPORT_TEMPLATE.md
+      - current git truth
+    primary_outputs:
+      - governance/ai/agent-mailbox/runtime/<ISSUE_KEY>/<RUN_ID>/*
+      - governance/ai/reviews/shared/*
+    hard_gates:
+      - Do not use mailbox dispatch for broad exploratory planning when controller context is already strong.
+      - Do not mix transient mailbox runtime files into feature commit boundaries.
+      - Do not widen boundaries, fallback rules, or verification commands without an explicit controller decision.
+    references: []
+    prompts: []
+    scripts:
+      - toolkit/scripts/agents/run-claude-task.ps1
+      - toolkit/scripts/agents/run-codex-task.ps1
+    runtime_support: [claude, codex]
+    dependencies: []
+    pack: core
+
+  - name: sdtk-dev-backend
+    phase: dev
+    role_tag: /dev-backend
+    use_when: Bounded backend specialist aid under `/dev` for a scoped feature slice. It does not create a separate owner root or replace the default `DEV-Plan -> DEV-Code` path.
+    primary_inputs:
+      - docs/architecture/ARCH_DESIGN_[FEATURE_KEY].md
+      - docs/api/[FeaturePascal]_API.yaml
+      - docs/database/DATABASE_SPEC_[FEATURE_KEY].md
+    primary_outputs:
+      - backend code
+      - backend tests
+    hard_gates:
+      - Do not generate backend code without approved API and data-contract sources.
+      - Follow existing repository patterns before introducing new module structure.
+      - Do not treat `/dev-backend` as a replacement for `sdtk-dev` ownership or the default downstream `SDTK-CODE` path.
+    references: []
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-dev, sdtk-api-doc]
+    pack: core
+
+  - name: sdtk-dev-frontend
+    phase: dev
+    role_tag: /dev-frontend
+    use_when: Bounded frontend specialist aid under `/dev` for a scoped feature slice. It does not create a separate owner root or replace the default `DEV-Plan -> DEV-Code` path.
+    primary_inputs:
+      - docs/design/DESIGN_LAYOUT_[FEATURE_KEY].md
+      - docs/specs/[FEATURE_KEY]_FLOW_ACTION_SPEC.md
+      - docs/architecture/ARCH_DESIGN_[FEATURE_KEY].md
+    primary_outputs:
+      - frontend code
+      - frontend tests
+    hard_gates:
+      - Do not implement screens without the current design and flow-action source.
+      - Preserve existing frontend patterns before introducing new abstractions.
+      - Do not treat `/dev-frontend` as a replacement for `sdtk-dev` ownership or the default downstream `SDTK-CODE` path.
+    references: []
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-dev, sdtk-design-layout, sdtk-screen-design-spec]
+    pack: core
+
+  - name: sdtk-api-doc
+    phase: arch
+    role_tag: /api-doc
+    use_when: Generate or update OpenAPI YAML, API endpoints markdown, and flow-list files from architecture scope.
+    primary_inputs:
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+      - docs/architecture/ARCH_DESIGN_[FEATURE_KEY].md
+    primary_outputs:
+      - docs/api/[FeaturePascal]_API.yaml
+      - docs/api/[FEATURE_KEY]_ENDPOINTS.md
+      - docs/api/[feature_snake]_api_flow_list.txt
+    hard_gates:
+      - Do not invent API paths or schemas that contradict BA or ARCH source.
+      - Keep YAML, endpoint markdown, and flow list synchronized.
+    references:
+      - toolkit/templates/docs/api/YAML_CREATION_RULES.md
+      - toolkit/templates/docs/api/API_DESIGN_FLOWCHART_CREATION_RULES.md
+    prompts: []
+    scripts: []
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-arch, sdtk-ba]
+    pack: core
+
+  - name: sdtk-api-design-spec
+    phase: arch
+    role_tag: /api-design-spec
+    use_when: Generate API design detail markdown from OpenAPI YAML and API flow list.
+    primary_inputs:
+      - docs/api/[FeaturePascal]_API.yaml
+      - docs/api/[feature_snake]_api_flow_list.txt
+    primary_outputs:
+      - docs/api/[FEATURE_KEY]_API_DESIGN_DETAIL.md
+      - docs/api/flows/*.puml
+      - docs/api/images/*.svg
+    hard_gates:
+      - Do not drift from the source YAML or flow list.
+      - Do not leave broken flow image embeds in the generated markdown.
+    references:
+      - toolkit/templates/docs/api/API_DESIGN_FLOWCHART_CREATION_RULES.md
+      - toolkit/templates/docs/api/API_DESIGN_CREATION_RULES.md
+    prompts: []
+    scripts:
+      - toolkit/skills/sdtk-api-design-spec/scripts/generate_api_design_detail.py
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-api-doc]
+    pack: core
+
+  - name: sdtk-design-layout
+    phase: arch
+    role_tag: /design-layout
+    use_when: Generate design-layout docs with PlantUML salt wireframes and item tables for UI scope.
+    primary_inputs:
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+      - docs/api/[FEATURE_KEY]_ENDPOINTS.md
+    primary_outputs:
+      - docs/design/DESIGN_LAYOUT_[FEATURE_KEY].md
+      - docs/specs/assets/<feature_snake>/screens/*.svg
+    hard_gates:
+      - Do not skip screen IDs or item numbering alignment with the wireframe.
+      - If rendering is unavailable, record that explicitly instead of pretending render assets exist.
+    references: []
+    prompts: []
+    scripts:
+      - toolkit/skills/sdtk-design-layout/scripts/render_design_layout_images.py
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-arch, sdtk-ba]
+    pack: core
+
+  - name: sdtk-screen-design-spec
+    phase: arch
+    role_tag: /screen-design-spec
+    use_when: Build flow-action specs from requirement sources, design source references, and API mappings.
+    primary_inputs:
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+      - docs/design/DESIGN_LAYOUT_[FEATURE_KEY].md
+      - docs/api/[FEATURE_KEY]_ENDPOINTS.md
+    primary_outputs:
+      - docs/specs/[FEATURE_KEY]_FLOW_ACTION_SPEC.md
+      - docs/specs/assets/<feature_snake>/screens/*
+    hard_gates:
+      - Do not finalize UI-scope screens without a valid design source type and reference.
+      - Do not leave broken image paths or missing API mappings in the spec.
+    references:
+      - toolkit/templates/docs/specs/FLOW_ACTION_SPEC_CREATION_RULES.md
+      - toolkit/skills/sdtk-screen-design-spec/references/numbering-rules.md
+      - toolkit/skills/sdtk-screen-design-spec/references/figma-mcp.md
+      - toolkit/skills/sdtk-screen-design-spec/references/excel-image-export.md
+    prompts: []
+    scripts:
+      - toolkit/skills/sdtk-screen-design-spec/scripts/validate_flow_action_spec_numbering.py
+      - toolkit/skills/sdtk-screen-design-spec/scripts/renumber_flow_action_spec_global.py
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-arch, sdtk-design-layout]
+    pack: core
+
+  - name: sdtk-test-case-spec
+    phase: qa
+    role_tag: /test-case-spec
+    use_when: Generate reusable screen-based test-case specifications before or during QA execution.
+    primary_inputs:
+      - docs/specs/[FEATURE_KEY]_FLOW_ACTION_SPEC.md
+      - docs/specs/BA_SPEC_[FEATURE_KEY].md
+      - docs/api/[FEATURE_KEY]_ENDPOINTS.md
+    primary_outputs:
+      - docs/qa/[FEATURE_KEY]_TEST_CASE.md
+    hard_gates:
+      - Do not invent test coverage that is not grounded in BA, flow-action, or API sources.
+      - Keep totals and structured coverage counts consistent with the QA baseline.
+    references:
+      - toolkit/templates/docs/qa/TEST_CASE_CREATION_RULES.md
+    prompts: []
+    scripts:
+      - toolkit/skills/sdtk-test-case-spec/scripts/validate_test_case_spec.py
+    runtime_support: [claude, codex]
+    dependencies: [sdtk-qa, sdtk-screen-design-spec]
+    pack: core
