@@ -170,6 +170,17 @@ a{color:var(--accent);text-decoration:none}
 
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#eef3f9 0%,#f7f3ec 100%);color:var(--graph-text);font-size:14px;line-height:1.6;height:100vh;overflow:hidden;--nav-width:0px}
 body.nav-open{--nav-width:84px}
+body.embedded-atlas{background:#ffffff;--nav-width:0px}
+body.embedded-atlas .nav{display:none !important}
+body.embedded-atlas .panel{inset:0 !important;left:0 !important;right:0 !important;top:0 !important;bottom:0 !important;padding:0 !important}
+body.embedded-atlas .graph-shell{padding:0;border:none;border-radius:0;box-shadow:none;background:#ffffff}
+body.embedded-atlas .graph-main-header{display:none}
+body.embedded-atlas .graph-stage{height:100%}
+body.embedded-atlas .graph-canvas-shell{min-height:0;height:100%;border:none;border-radius:0;padding:0}
+body.embedded-atlas #graph-canvas{border-radius:0}
+body.embedded-atlas .graph-settings-corner{top:14px;right:14px}
+body.embedded-atlas .graph-footer-status{bottom:0}
+body.embedded-atlas .graph-focus-overlay{top:14px;right:14px;bottom:14px}
 .panel{border-radius:30px;overflow:hidden}
 a{color:#3156c9;text-decoration:none}
 .panel{display:none;position:fixed;top:16px;right:16px;bottom:16px;left:calc(var(--nav-width) + 16px);padding:0;min-height:0;overflow:hidden}
@@ -721,8 +732,10 @@ const INDEX = __ATLAS_INDEX_JSON__;
 const GRAPH = __ATLAS_GRAPH_JSON__;
 const FAMILY_COLORS = __ATLAS_FAMILY_COLORS_JSON__;
 const FAMILY_GLYPHS = {
+  'governance': 'G', 'product': 'P', 'spec': 'S', 'architecture': 'A', 'database': 'D',
+  'api': 'I', 'qa': 'Q', 'design': 'L', 'dev': 'V', 'skill': 'K', 'template': 'T',
   'governance-core': 'G', 'backlog': 'B', 'review-artifact': 'R', 'knowledge-object': 'K',
-  'toolkit-skill': 'S', 'toolkit-template': 'T', 'toolkit-guide': 'I', 'docs-site-guide': 'D',
+  'toolkit-skill': 'S', 'toolkit-template': 'T', 'toolkit-guide': 'I', 'docs-site-guide': 'D', 'guide': 'D',
   'root-readme': 'H', 'other-markdown': 'M',
 };
 const GRAPH_EDGE_COLORS = { references_path: 'rgba(95,137,255,0.38)', references_wiki_link: 'rgba(46,181,125,0.44)' };
@@ -893,6 +906,10 @@ const ATLAS_NAV_STORAGE_KEY = 'sdtkAtlasNavOpen';
 const ATLAS_ASK_POSITION_STORAGE_KEY = 'sdtkAtlasAskDockPositionV3';
 const GRAPH_TOOLBAR_POSITION_STORAGE_KEY = 'sdtkAtlasGraphToolbarPositionV3';
 const GRAPH_FOCUS_POSITION_STORAGE_KEY = 'sdtkAtlasGraphFocusPosition';
+const VIEW_PARAMS = new URLSearchParams(window.location.search);
+const EMBEDDED_ATLAS = VIEW_PARAMS.get('embedded') === '1';
+const REQUESTED_PANEL = VIEW_PARAMS.get('panel');
+const INITIAL_PANEL = ['dash', 'docs', 'graph'].includes(REQUESTED_PANEL) ? REQUESTED_PANEL : (EMBEDDED_ATLAS ? 'graph' : 'dash');
 const atlasAskDragState = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
 const graphOverlayDragState = { active: false, kind: '', moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
 const ATLAS_ASK_RUNTIME_OPTIONS = [
@@ -907,6 +924,11 @@ const ATLAS_ASK_MODEL_LABELS = {
   'gpt-5.4-mini': 'GPT-5.4 Mini',
   'gpt-5.3-codex': 'GPT-5.3 Codex',
 };
+if (EMBEDDED_ATLAS) {
+  document.body.classList.add('embedded-atlas');
+}
+const initialPanelButton = document.querySelector(`.nav-panel-btn[data-panel="${INITIAL_PANEL}"]`);
+showPanel(INITIAL_PANEL, initialPanelButton);
 function escapeHtml(value) {
   return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -3248,13 +3270,20 @@ function ensureGraphLayout(width, height, visibleDocs, visibleEdges) {
     (groupBy[group] = groupBy[group] || []).push(doc);
   });
   const groupNames = Object.keys(groupBy).sort();
-  const clusterRadius = Math.min(width, height) * 0.29;
+  const isEmbeddedCompactGraph = EMBEDDED_ATLAS && visibleDocs.length <= 12;
+  const clusterRadius = isEmbeddedCompactGraph
+    ? Math.min(width, height) * 0.1
+    : Math.min(width, height) * 0.29;
   const centers = {};
   groupNames.forEach((group, index) => {
     const angle = (index / Math.max(groupNames.length, 1)) * Math.PI * 2;
     centers[group] = {
-      x: width / 2 + clusterRadius * Math.cos(angle),
-      y: height / 2 + clusterRadius * Math.sin(angle),
+      x: isEmbeddedCompactGraph
+        ? width / 2 + clusterRadius * Math.cos(angle - Math.PI / 2)
+        : width / 2 + clusterRadius * Math.cos(angle),
+      y: isEmbeddedCompactGraph
+        ? height / 2 + clusterRadius * Math.sin(angle - Math.PI / 2)
+        : height / 2 + clusterRadius * Math.sin(angle),
     };
   });
 
@@ -3269,7 +3298,9 @@ function ensureGraphLayout(width, height, visibleDocs, visibleEdges) {
     positions = {};
     groupNames.forEach(group => {
       const members = groupBy[group].slice().sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id));
-      const memberRadius = Math.max(34, Math.min(140, 18 + Math.sqrt(members.length) * 12));
+      const memberRadius = isEmbeddedCompactGraph
+        ? Math.max(120, Math.min(260, 56 + members.length * 22))
+        : Math.max(34, Math.min(140, 18 + Math.sqrt(members.length) * 12));
       members.forEach((doc, index) => {
         const angle = (index / Math.max(members.length, 1)) * Math.PI * 2;
         const seed = hashString(doc.id);
@@ -3339,6 +3370,7 @@ function ensureGraphLayout(width, height, visibleDocs, visibleEdges) {
 
 function drawGraph() {
   const visibleDocs = getVisibleDocs();
+  const isEmbeddedCompactGraphView = EMBEDDED_ATLAS && visibleDocs.length <= 12;
   const visibleIds = new Set(visibleDocs.map(doc => doc.id));
   normalizeGraphFocus(visibleIds);
   const visibleEdges = getVisibleDocEdges(visibleIds);
@@ -3372,7 +3404,9 @@ function drawGraph() {
       const paddingY = 120;
       const fitZoomX = viewport.usableWidth / (bounds.width + paddingX);
       const fitZoomY = viewport.usableHeight / (bounds.height + paddingY);
-      graphState.targetZoom = Math.max(0.82, Math.min(1.52, fitZoomX, fitZoomY));
+      graphState.targetZoom = isEmbeddedCompactGraphView
+        ? Math.max(2.6, Math.min(6.5, fitZoomX, fitZoomY))
+        : Math.max(0.82, Math.min(1.52, fitZoomX, fitZoomY));
       const fit = computePanForTargetCenter(
         bounds.centerX,
         bounds.centerY,
@@ -3407,7 +3441,9 @@ function drawGraph() {
       const paddingY = 120;
       const fitZoomX = viewport.usableWidth / (bounds.width + paddingX);
       const fitZoomY = viewport.usableHeight / (bounds.height + paddingY);
-      graphState.targetZoom = Math.max(0.84, Math.min(1.48, fitZoomX, fitZoomY));
+      graphState.targetZoom = isEmbeddedCompactGraphView
+        ? Math.max(2.4, Math.min(6.2, fitZoomX, fitZoomY))
+        : Math.max(0.84, Math.min(1.48, fitZoomX, fitZoomY));
       const fit = computePanForTargetCenter(
         bounds.centerX,
         bounds.centerY,
@@ -3421,9 +3457,33 @@ function drawGraph() {
       graphState.targetPanY = fit.panY;
     }
   } else if (!focusId && !graphState.isDragging && !graphState.manualViewport) {
-    graphState.targetZoom = 1;
-    graphState.targetPanX = 0;
-    graphState.targetPanY = 0;
+    if (EMBEDDED_ATLAS) {
+      const bounds = computePositionBounds(visibleDocs);
+      if (bounds) {
+        const paddingX = 120;
+        const paddingY = 120;
+        const fitZoomX = viewport.usableWidth / (bounds.width + paddingX);
+        const fitZoomY = viewport.usableHeight / (bounds.height + paddingY);
+        graphState.targetZoom = isEmbeddedCompactGraphView
+          ? Math.max(2.8, Math.min(7.2, fitZoomX, fitZoomY))
+          : Math.max(0.92, Math.min(1.9, fitZoomX, fitZoomY));
+        const fit = computePanForTargetCenter(
+          bounds.centerX,
+          bounds.centerY,
+          viewport.centerX,
+          viewport.centerY,
+          width,
+          height,
+          graphState.targetZoom,
+        );
+        graphState.targetPanX = fit.panX;
+        graphState.targetPanY = fit.panY;
+      }
+    } else {
+      graphState.targetZoom = 1;
+      graphState.targetPanX = 0;
+      graphState.targetPanY = 0;
+    }
   }
   applyCameraStep();
 

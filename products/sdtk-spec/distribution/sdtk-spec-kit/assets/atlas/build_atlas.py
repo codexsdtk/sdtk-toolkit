@@ -83,12 +83,13 @@ RE_RELEASE_REF = re.compile(r"\b(?:sdtk-spec-kit@)?(0\.\d+\.\d+)\b")
 def classify_family(rel: str) -> str:
     p = rel.replace("\\", "/").lower()
     name = Path(rel).name.lower()
+    is_guide_path = p.startswith("guides/") or "/guides/" in p
     if p == "readme.md":
         return "root-readme"
     if "backlog" in name:
         return "backlog"
-    if "governance" in p:
-        return "governance"
+    if "docs/database" in p or "database/" in p:
+        return "database"
     if "docs/specs" in p or "specs/" in p:
         return "spec"
     if "docs/architecture" in p or "architecture/" in p:
@@ -103,6 +104,10 @@ def classify_family(rel: str) -> str:
         return "dev"
     if "docs/product" in p or "product/" in p:
         return "product"
+    if is_guide_path:
+        return "guide"
+    if "governance" in p:
+        return "governance"
     if "skills" in p:
         return "skill"
     if "templates" in p:
@@ -668,9 +673,11 @@ def build_summary(
 # ---------------------------------------------------------------------------
 _FAMILY_COLORS = {
     "governance": "#58a6ff",
+    "guide": "#14b8a6",
     "backlog": "#d2a8ff",
     "spec": "#f0883e",
     "architecture": "#3fb950",
+    "database": "#a371f7",
     "api": "#f778ba",
     "qa": "#79c0ff",
     "design": "#ffa657",
