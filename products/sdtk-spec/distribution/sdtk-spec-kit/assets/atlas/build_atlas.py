@@ -88,6 +88,10 @@ def classify_family(rel: str) -> str:
         return "root-readme"
     if "backlog" in name:
         return "backlog"
+    if "skills" in p:
+        return "skill"
+    if "templates" in p:
+        return "template"
     if "docs/database" in p or "database/" in p:
         return "database"
     if "docs/specs" in p or "specs/" in p:
@@ -108,10 +112,6 @@ def classify_family(rel: str) -> str:
         return "guide"
     if "governance" in p:
         return "governance"
-    if "skills" in p:
-        return "skill"
-    if "templates" in p:
-        return "template"
     return "other-markdown"
 
 

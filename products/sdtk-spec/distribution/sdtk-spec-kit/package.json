@@ -1,6 +1,6 @@
 {
     "name": "sdtk-spec-kit",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "description": "SDTK-SPEC CLI toolkit for deterministic software documentation workflows via the sdtk-spec command",
     "bin": {
         "sdtk-spec": "bin/sdtk.js"
