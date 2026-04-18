@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
 const net = require("net");
 const path = require("path");
 const { spawn, execFile } = require("child_process");
@@ -194,6 +195,76 @@ async function waitForServer(host, port) {
 }
 
 /**
+ * Probe a local Atlas endpoint and capture its HTTP status.
+ *
+ * @param {string} url
+ * @returns {Promise<{ ok: boolean, statusCode: number, body: string }>}
+ */
+function probeUrl(url) {
+  return new Promise((resolve) => {
+    let target;
+    try {
+      target = new URL(url);
+    } catch (_) {
+      resolve({ ok: false, statusCode: 0, body: "" });
+      return;
+    }
+
+    const transport = target.protocol === "https:" ? https : http;
+    const req = transport.request(
+      target,
+      { method: "GET", timeout: 1200 },
+      (res) => {
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk) => {
+          if (body.length < 512) {
+            body += chunk.slice(0, 512 - body.length);
+          }
+        });
+        res.on("end", () => {
+          const statusCode = res.statusCode || 0;
+          resolve({
+            ok: statusCode >= 200 && statusCode < 300,
+            statusCode,
+            body,
+          });
+        });
+      }
+    );
+
+    req.on("timeout", () => {
+      req.destroy();
+      resolve({ ok: false, statusCode: 0, body: "" });
+    });
+
+    req.on("error", () => {
+      resolve({ ok: false, statusCode: 0, body: "" });
+    });
+
+    req.end();
+  });
+}
+
+/**
+ * Check whether an existing server on the requested port is a usable Atlas server.
+ *
+ * @param {string} host
+ * @param {number} port
+ * @param {string} viewerUrl
+ * @returns {Promise<{ reusable: boolean, health: { ok: boolean, statusCode: number }, viewer: { ok: boolean, statusCode: number } }>}
+ */
+async function probeExistingAtlasServer(host, port, viewerUrl) {
+  const health = await probeUrl(`http://${host}:${port}/api/health`);
+  const viewer = await probeUrl(`${viewerUrl}?embedded=1&probe=1`);
+  return {
+    reusable: health.ok && viewer.ok,
+    health: { ok: health.ok, statusCode: health.statusCode },
+    viewer: { ok: viewer.ok, statusCode: viewer.statusCode },
+  };
+}
+
+/**
  * Start a lightweight Node.js static file server for the atlas output dir.
  * Binds to loopback by default. Prevents path traversal outside outputDir/projectPath.
  *
@@ -333,6 +404,15 @@ async function openViewer(config, noOpen = false) {
     await waitForServer(host, port);
     console.log(`[atlas] Viewer server ready: ${viewerUrl}`);
   } else {
+    const probe = await probeExistingAtlasServer(host, port, viewerUrl);
+    if (!probe.reusable) {
+      throw new CliError(
+        `Port ${port} is already occupied by an incompatible Atlas server.\n` +
+          `  Health endpoint status: ${probe.health.statusCode || "unreachable"}\n` +
+          `  Viewer endpoint status: ${probe.viewer.statusCode || "unreachable"}\n` +
+          "Stop the existing process on that port, then rerun the command, or pass --port <number>."
+      );
+    }
     console.log(`[atlas] Reusing existing server at http://${host}:${port}`);
   }
 

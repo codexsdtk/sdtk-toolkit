@@ -22,6 +22,9 @@ node_modules/
 *.tmp
 *.swp
 *.swo
+.next-start*.log
+.tmp_*.js
+**/.tmp_*.js
 
 # IDE
 .vscode/
@@ -147,4 +150,6 @@ $null
 /docs/dev/evidence/*
 # Local Atlas Ask history
 governance/ai/knowledge/atlas/history/
+.playwright-mcp/
+.sdtk/atlas/
 .superpowers/
