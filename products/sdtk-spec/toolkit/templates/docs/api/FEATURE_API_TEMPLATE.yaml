@@ -1,0 +1,20 @@
+openapi: '3.0.3'
+info:
+  title: '{{FEATURE_NAME}} API'
+  version: '1.0.0'
+  description: |
+    # {{FEATURE_NAME}} API
+    - FeatureKey: {{FEATURE_KEY}}
+servers:
+  - url: /api/v1
+security:
+  - Bearer: []
+paths: {}
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      description: Access token
+  schemas: {}
+

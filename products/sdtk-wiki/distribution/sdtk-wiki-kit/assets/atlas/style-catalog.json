@@ -1,0 +1,154 @@
+{
+  "schema": "sdtk.design.style-catalog.v1",
+  "generatedFrom": "sdtk-design-kit/src/lib/style-presets.js styleCatalog()",
+  "styles": [
+    {
+      "name": "minimal-saas",
+      "label": "Minimal SaaS",
+      "category": "SaaS & Productivity",
+      "summary": "Clean solo-founder SaaS default with practical hierarchy, quiet surfaces, and low-decoration components.",
+      "swatches": [
+        "#F7F8FA",
+        "#FFFFFF",
+        "#1F2933",
+        "#667085",
+        "#2563EB",
+        "#0F8A5F",
+        "#B7791F",
+        "#B42318",
+        "#D9DEE7"
+      ],
+      "typographySample": "Use system UI, Segoe UI, Roboto, Helvetica, Arial, sans-serif.",
+      "component": "Metric card: label, value, short delta."
+    },
+    {
+      "name": "premium-dashboard",
+      "label": "Premium Dashboard",
+      "category": "Dashboard & Data",
+      "summary": "Dashboard-first MVP style with stronger density, metrics, cards, tables, and command surfaces.",
+      "swatches": [
+        "#0B1020",
+        "#F5F7FB",
+        "#FFFFFF",
+        "#111827",
+        "#F8FAFC",
+        "#64748B",
+        "#0F766E",
+        "#2563EB",
+        "#D8E0EA"
+      ],
+      "typographySample": "Use Inter-like system sans with tabular numerals for metrics.",
+      "component": "KPI card: label, value, trend, comparison."
+    },
+    {
+      "name": "bold-founder",
+      "label": "Bold Founder",
+      "category": "Marketing & Launch",
+      "summary": "High-contrast launch style for marketing-heavy MVPs with decisive type and CTA hierarchy.",
+      "swatches": [
+        "#111111",
+        "#FFF7ED",
+        "#FFFFFF",
+        "#18181B",
+        "#FAFAFA",
+        "#111827",
+        "#A1A1AA",
+        "#F97316",
+        "#22C55E",
+        "#27272A"
+      ],
+      "typographySample": "Use a heavy display face fallback stack: Impact, Arial Black, Inter, system-ui.",
+      "component": "Hero lockup: large headline, short proof line, primary CTA."
+    },
+    {
+      "name": "warm-editorial",
+      "label": "Warm Editorial",
+      "category": "Editorial & Content",
+      "summary": "Softer consultant/service-product style with restrained serif-led hierarchy and warm surfaces.",
+      "swatches": [
+        "#FAF7F2",
+        "#FFFFFF",
+        "#1C1A17",
+        "#8A817A",
+        "#C0512F",
+        "#2F5B4F"
+      ],
+      "typographySample": "Use Georgia, Charter, or Times New Roman for display; use system sans for UI labels and forms.",
+      "component": "Editorial hero: serif headline, concise support copy, terracotta CTA."
+    },
+    {
+      "name": "ecommerce-retail",
+      "label": "E-Commerce Retail",
+      "category": "E-Commerce & Retail",
+      "summary": "Product-forward storefront style with photography-led cards, a single confident accent for CTA and price, and a sticky cart/checkout rail.",
+      "swatches": [
+        "#FFFFFF",
+        "#F6F7F9",
+        "#1A1D21",
+        "#6B7280",
+        "#4338CA",
+        "#E8590C",
+        "#1B873F",
+        "#B7791F",
+        "#C2330E",
+        "#E6E8EB"
+      ],
+      "typographySample": "Use a clean geometric/grotesque system sans: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif.",
+      "component": "Product card: image, name, price, rating/review count, add-to-cart."
+    },
+    {
+      "name": "fintech-trust",
+      "label": "Fintech Trust",
+      "category": "Fintech & Data",
+      "summary": "Trust-forward financial style with dense data surfaces, tabular numerals, a restrained palette, and strong status semantics.",
+      "swatches": [
+        "#F4F6FB",
+        "#FFFFFF",
+        "#0F172A",
+        "#5A6678",
+        "#1E3A8A",
+        "#0E7C66",
+        "#1B873F",
+        "#B7791F",
+        "#C2330E",
+        "#DCE2EC"
+      ],
+      "typographySample": "Use a precise system sans with tabular numerals enabled everywhere numbers appear: system-ui, Inter, Segoe UI, Roboto, sans-serif.",
+      "component": "Balance card: account label, balance (tabular), signed trend, last-updated."
+    },
+    {
+      "name": "editorial-content",
+      "label": "Editorial Content",
+      "category": "Editorial & Content",
+      "summary": "Reading-first content style with a narrow measure, serif-led hierarchy, warm surfaces, and minimal chrome for articles, blogs, and marketplace listings.",
+      "swatches": [
+        "#FBF9F5",
+        "#FFFFFF",
+        "#201C17",
+        "#857D72",
+        "#9A3412",
+        "#2F5B4F"
+      ],
+      "typographySample": "Use a readable serif for headings and long-form body (Georgia, Charter, 'Iowan Old Style', Times New Roman, serif); use system sans for UI labels, nav, and forms.",
+      "component": "Article hero: serif headline, byline, date, lead image with caption."
+    },
+    {
+      "name": "expressive-spectacle",
+      "label": "Expressive Spectacle",
+      "category": "Expressive & Motion",
+      "summary": "A dark, warm, cinematic style built for a single art-directed motion moment per screen (BK-357). Pair it with a manifest `signature` block; see the design-prototype skill's references/effects/EFFECTS.md.",
+      "swatches": [
+        "#0C0A09",
+        "#171412",
+        "#F4ECE0",
+        "#B8A894",
+        "#FF6A2B",
+        "#FFB765",
+        "#1A0F08",
+        "#322A22"
+      ],
+      "typographySample": "Use a display serif for hero headlines and section titles (Georgia, 'Times New Roman', serif) for an editorial, non-templated character; use system sans for UI, body, and data.",
+      "component": "Signature hero: full-bleed effect (poster-first) + monumental display headline + one primary CTA."
+    }
+  ]
+}

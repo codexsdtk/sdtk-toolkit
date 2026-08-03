@@ -1,0 +1,10 @@
+﻿{
+    "name":  "sdtk-ops-kit",
+    "version":  "0.2.1",
+    "dist-tags":  {
+                      "latest":  "0.2.1"
+                  },
+    "bin":  {
+                "sdtk-ops":  "bin/sdtk-ops.js"
+            }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "sdtk-wiki-kit",
+  "version": "0.17.0",
+  "description": "Project-local wiki and knowledge graph toolkit for SDTK workspaces.",
+  "bin": {
+    "sdtk-wiki": "bin/sdtk-wiki.js"
+  },
+  "main": "src/index.js",
+  "type": "commonjs",
+  "files": [
+    "bin/",
+    "src/",
+    "assets/keys/sdtk-entitlement-public.pem",
+    "assets/atlas/build_atlas.py",
+    "assets/atlas/doc_atlas_viewer_template.html",
+    "assets/atlas/style-catalog.json",
+    "assets/atlas/design-previews/",
+    "assets/atlas/design-annotate-bridge.js",
+    "assets/atlas/vendor/mermaid.min.js"
+  ],
+  "scripts": {
+    "test": "powershell -ExecutionPolicy Bypass -Command \"$ErrorActionPreference = 'Stop'; Set-Location '..\\..\\..\\..'; python -m unittest tests.test_sdtk_wiki_cli tests.test_sdtk_wiki_context\"",
+    "pack:smoke": "npm pack --dry-run",
+    "build:golden": "python3 assets/atlas/build_atlas.py --project-root tests/fixtures/wiki-build/project --output-dir tests/fixtures/wiki-build/golden --verbose"
+  },
+  "engines": {
+    "node": ">=18.13.0"
+  },
+  "keywords": [
+    "sdtk-wiki",
+    "wiki",
+    "knowledge-graph",
+    "cli",
+    "toolkit"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codexsdtk/sdtk-toolkit.git",
+    "directory": "products/sdtk-wiki/distribution/sdtk-wiki-kit"
+  },
+  "homepage": "https://github.com/codexsdtk/sdtk-toolkit/tree/main/products/sdtk-wiki/distribution/sdtk-wiki-kit",
+  "bugs": {
+    "url": "https://github.com/codexsdtk/sdtk-toolkit/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

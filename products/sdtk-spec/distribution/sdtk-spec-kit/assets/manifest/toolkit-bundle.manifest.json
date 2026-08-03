@@ -1,0 +1,507 @@
+{
+  "version": "0.9.1",
+  "sourceCommit": "unknown",
+  "fileCount": 100,
+  "files": [
+    {
+      "path": "toolkit/AGENTS.md",
+      "sha256": "e70ac1fc1582eeb64be47afb391b6bae5015d0f6b7b31272a5833a9b473885d3",
+      "size": 15814
+    },
+    {
+      "path": "toolkit/install.ps1",
+      "sha256": "52bdc750984ee3c3598c1f1838cf3d72b2fc0ed06fca173ec3da79929b10f20c",
+      "size": 13283
+    },
+    {
+      "path": "toolkit/README.md",
+      "sha256": "0218dea84f0f9a25ddd2e68c6ae9995685ec471ff0950bd17d1eddcaa99f3e0e",
+      "size": 3484
+    },
+    {
+      "path": "toolkit/runtimes/claude/CLAUDE_TEMPLATE.md",
+      "sha256": "301a604b2daa39f85a7b9cbf4b634df5dafd16f84622ad188bc214b34da226d7",
+      "size": 3501
+    },
+    {
+      "path": "toolkit/runtimes/codex/CODEX_TEMPLATE.md",
+      "sha256": "6f1fd656e95906a054299312d44e63a28d948c634b6534089db3eeca9936bf70",
+      "size": 2853
+    },
+    {
+      "path": "toolkit/scripts/agents/run-claude-task.ps1",
+      "sha256": "8616291be4aaa4fb5cb0f1f4c738c108ab79090bf767ee2b4403d6d582c150c7",
+      "size": 19239
+    },
+    {
+      "path": "toolkit/scripts/agents/run-codex-task.ps1",
+      "sha256": "e84d86e8bd72a10875b403542c725d2c7a2e536920e501c6389ab0de9270b865",
+      "size": 32595
+    },
+    {
+      "path": "toolkit/scripts/agents/validate-mailbox-formal-artifact.py",
+      "sha256": "6bcebe5fdb87451a7260101eaed32c6b61a2cf07832be754790f5432e028a503",
+      "size": 2883
+    },
+    {
+      "path": "toolkit/scripts/generate-code-handoff.ps1",
+      "sha256": "b9bdb2489c2881d03e965c7dd849468f797e2070d30e6730ab9ddf37b54b7879",
+      "size": 10958
+    },
+    {
+      "path": "toolkit/scripts/init-feature.ps1",
+      "sha256": "2b456e0e9ebeb948db9bdd1a905195285a8ae44839b09b5f0bbefac597cfd67a",
+      "size": 10480
+    },
+    {
+      "path": "toolkit/scripts/install-claude-skills.ps1",
+      "sha256": "8455f08e24e38c78aad925c36ebc3605983f1c7f9782190233402858be77b0c6",
+      "size": 6551
+    },
+    {
+      "path": "toolkit/scripts/install-codex-skills.ps1",
+      "sha256": "3191823ec5a481c34128ef645e8103e3ee526a74dd108ba2206878edd7b50cda",
+      "size": 10003
+    },
+    {
+      "path": "toolkit/scripts/uninstall-claude-skills.ps1",
+      "sha256": "f925a58e0cc92addc542762c2bf5f60be2d538dcca88e15de0b628b3a57048b1",
+      "size": 4343
+    },
+    {
+      "path": "toolkit/scripts/uninstall-codex-skills.ps1",
+      "sha256": "db0e580a20b43bb0af399ff3e4f7f2d826423d67bd2fa9a8121a384337a47de1",
+      "size": 4395
+    },
+    {
+      "path": "toolkit/SDTK_TOOLKIT.md",
+      "sha256": "cdc95051f9adacfc25353e33d5522270ab524f1d7eb342582009bc685bb0d8a5",
+      "size": 9168
+    },
+    {
+      "path": "toolkit/sdtk-spec.config.json",
+      "sha256": "712382d838a18b6cc6a5285b3c536fac74138c752a3fa1fd318828b19ece6b8f",
+      "size": 1231
+    },
+    {
+      "path": "toolkit/sdtk-spec.config.profiles.example.json",
+      "sha256": "2a306c1609499fb4910b86d5ec6e8c796e0cdf72c5f97fe3df9c1388ac62b913",
+      "size": 2134
+    },
+    {
+      "path": "toolkit/session/SDTK_ACTIVE_BOOTSTRAP.md",
+      "sha256": "5c594bb3202ee462db4d23cfd2160da8243dd777bf4547eace207e48296f4a01",
+      "size": 2407
+    },
+    {
+      "path": "toolkit/session/SDTK_AGENT_WORKING_RULES.md",
+      "sha256": "c628d8a9f1fc7d95a5e6c3079847ebdc06900602588c72efef0e0c03d25d73ba",
+      "size": 2011
+    },
+    {
+      "path": "toolkit/skills-claude/api-design-spec/SKILL.md",
+      "sha256": "c17bb4faff318032ee99ead56e5fa182811c7bcaa176e463d0377cefde213ac1",
+      "size": 5897
+    },
+    {
+      "path": "toolkit/skills-claude/api-doc/SKILL.md",
+      "sha256": "5e6716b6777029579da7314306269d22ca5a5a208940f2fe8fa6d78cd23273fb",
+      "size": 5230
+    },
+    {
+      "path": "toolkit/skills-claude/arch/SKILL.md",
+      "sha256": "7091d48412c65f55f349cf1e91bb51b61fed5e164c82fa21f6e20424c0fb6479",
+      "size": 3019
+    },
+    {
+      "path": "toolkit/skills-claude/ba/SKILL.md",
+      "sha256": "7f6ed86a7a9cbafbb4b4903546984967dc29e4893e8a628d9725bd19cc4c5626",
+      "size": 3572
+    },
+    {
+      "path": "toolkit/skills-claude/design-layout/SKILL.md",
+      "sha256": "2b96d5dcddd018d5b5a04fb90bbd15bf38885733d7e7e67206874bff04e3ed7c",
+      "size": 5875
+    },
+    {
+      "path": "toolkit/skills-claude/dev-backend/SKILL.md",
+      "sha256": "b4de86bc4730c4fcfe4f1bde8f9f64f03fd517825bb699e911199825cc3d4249",
+      "size": 4952
+    },
+    {
+      "path": "toolkit/skills-claude/dev-frontend/SKILL.md",
+      "sha256": "37b3ae11db18bc3f64a76b22bca95cea778d6cfbb8b038d46851bd44ff8ff8f1",
+      "size": 4990
+    },
+    {
+      "path": "toolkit/skills-claude/dev/SKILL.md",
+      "sha256": "a4f326e2cafff865aaaed8f8de9407f3baa3cfebe33979528a15eb26d2e8482b",
+      "size": 3915
+    },
+    {
+      "path": "toolkit/skills-claude/evolve/SKILL.md",
+      "sha256": "caab483c02ff355634dd3e94c2d3d585ba6469c092ce5ab4bee97357da40be99",
+      "size": 7532
+    },
+    {
+      "path": "toolkit/skills-claude/mailbox-dispatch/SKILL.md",
+      "sha256": "6fa2283aa1ebb7bf5b6e84d5d5d9d9ddf71082091b108bd46895923a5fca3e09",
+      "size": 5756
+    },
+    {
+      "path": "toolkit/skills-claude/orchestrator/SKILL.md",
+      "sha256": "aa086be1038e34b1b29f7f65bacf254b5c1bfdc1203bd3e643c27acca4f9c2fa",
+      "size": 5359
+    },
+    {
+      "path": "toolkit/skills-claude/pm/SKILL.md",
+      "sha256": "e9e346ff0e1fc66236ceabf64a043c9a28926e7ff06296b26dd5836cf045802a",
+      "size": 4928
+    },
+    {
+      "path": "toolkit/skills-claude/qa/SKILL.md",
+      "sha256": "a94b06194dd120f959082e3bcded91573e8c7b2ee350ab5bbad63a9c3cc331ab",
+      "size": 4776
+    },
+    {
+      "path": "toolkit/skills-claude/screen-design-spec/SKILL.md",
+      "sha256": "320263e423dff2e9748b373aa9286b97721379ded62fde4e8a4dc5435a5f0048",
+      "size": 7494
+    },
+    {
+      "path": "toolkit/skills-claude/test-case-spec/SKILL.md",
+      "sha256": "8e06a6fe166892aa45e09cb69182ca53789c306fecb13cc94d06d0a7b00e0f46",
+      "size": 6228
+    },
+    {
+      "path": "toolkit/skills/sdtk-api-design-spec/scripts/generate_api_design_detail.py",
+      "sha256": "d6190662345da009ce8c5c235bc2cda9ef44e7e96802d103666055e26d393551",
+      "size": 27335
+    },
+    {
+      "path": "toolkit/skills/sdtk-api-design-spec/SKILL.md",
+      "sha256": "2fd046a8b229e54ae70d0f1091f10f9dc269f02630f443cffebc0206eac5daaf",
+      "size": 6105
+    },
+    {
+      "path": "toolkit/skills/sdtk-api-doc/SKILL.md",
+      "sha256": "b1e480f8c077927775be5b1b39010c29700c12f2c0eb052d836254bccf0c13ff",
+      "size": 5263
+    },
+    {
+      "path": "toolkit/skills/sdtk-arch/SKILL.md",
+      "sha256": "199329aa1764cb854932e020f42570f4ed4c0a469dddb92f14fb1455b80f761a",
+      "size": 5635
+    },
+    {
+      "path": "toolkit/skills/sdtk-ba/SKILL.md",
+      "sha256": "ce5af79e5c4902b9c8ceb7e8dae848a6a5a26d5b845eee94ee8aafff88990256",
+      "size": 2318
+    },
+    {
+      "path": "toolkit/skills/sdtk-design-layout/scripts/render_design_layout_images.py",
+      "sha256": "736577a6d6ebc6548aef1bade3dce7d9be62c260ac313cc148ab6a10b10d0197",
+      "size": 7925
+    },
+    {
+      "path": "toolkit/skills/sdtk-design-layout/SKILL.md",
+      "sha256": "642be6e9162617861fc3253449a78cc653b714df7148dc5ec4b14e93d3e3dc14",
+      "size": 5993
+    },
+    {
+      "path": "toolkit/skills/sdtk-dev-backend/SKILL.md",
+      "sha256": "099024d3b31b63a20e6a041d4a3f0062bfd4fa5b3960926112fa44a7a20972b5",
+      "size": 5347
+    },
+    {
+      "path": "toolkit/skills/sdtk-dev-frontend/SKILL.md",
+      "sha256": "419def53f37a10006a54392e642f2e86ac2bfa44c8ed826159ce309f2a9a3d6a",
+      "size": 5343
+    },
+    {
+      "path": "toolkit/skills/sdtk-dev/prompts/code-quality-reviewer.md",
+      "sha256": "3296fe9416600105c01680c9bc2f0d17f8c5f657e50949f5c49cb67db7aa0ac9",
+      "size": 1101
+    },
+    {
+      "path": "toolkit/skills/sdtk-dev/prompts/implementer.md",
+      "sha256": "6c866b7f8dec193a4c26066e8ac43004ff809f6407ead467a3cb72d90425af52",
+      "size": 1794
+    },
+    {
+      "path": "toolkit/skills/sdtk-dev/prompts/spec-reviewer.md",
+      "sha256": "55dd53b1ccbedd271ad23ca8df01afc317eced27ee17af3b37f31f0b9176ca8b",
+      "size": 1191
+    },
+    {
+      "path": "toolkit/skills/sdtk-dev/SKILL.md",
+      "sha256": "749f0ff0865d8940cec9b16859706fd46f111a4d9bf54b6ccba381fe9db7a90e",
+      "size": 9409
+    },
+    {
+      "path": "toolkit/skills/sdtk-evolve/SKILL.md",
+      "sha256": "691e7a0dd50262f247ad8a4c8ca05892c1240245de20580cc411c2d063bf9a1f",
+      "size": 7861
+    },
+    {
+      "path": "toolkit/skills/sdtk-mailbox-dispatch/SKILL.md",
+      "sha256": "df593d5ab4e7c5f4b05ac9ddb5078189b25bd954e546ab65c0147d024e4f4d59",
+      "size": 5761
+    },
+    {
+      "path": "toolkit/skills/sdtk-orchestrator/SKILL.md",
+      "sha256": "03454a777d0473080a7c86bd7b011a476d3e55a64f77219c154b9d98fab0307f",
+      "size": 12532
+    },
+    {
+      "path": "toolkit/skills/sdtk-pm/SKILL.md",
+      "sha256": "ae53d96b6a4fb4ea60fb5de6578b2620c3adb43e1d722a0469cdfa5a90b92903",
+      "size": 4358
+    },
+    {
+      "path": "toolkit/skills/sdtk-qa/SKILL.md",
+      "sha256": "e2c7fa172483ad6f1401ef831cd890c0bd9289f62ddc898335a4b8ac32bd6f7f",
+      "size": 6386
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/references/commerce-profile-screens.md",
+      "sha256": "0702605f4c3a42cd06eb35ef61ca4b64f928c6b89dfb1204bcc978fb3ce033f9",
+      "size": 5762
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/references/excel-image-export.md",
+      "sha256": "cad3bda4560548c329041c403edf3192c6e3864f47d56736fa02690ab175964c",
+      "size": 2237
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/references/figma-mcp.md",
+      "sha256": "931dd7eaebb988bf070d39ad4fb95f91881f2cfccf04524f38208e5c5f97eee7",
+      "size": 2098
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/references/numbering-rules.md",
+      "sha256": "7e37b48f03a6585d3519beba1c3ca12d8a20f8bbe61eb8585851d19202a424c0",
+      "size": 1521
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/scripts/renumber_flow_action_spec_global.py",
+      "sha256": "2916fa8a68854692005cba85beaaae6601c0eb063c6f172463e996f7b93efc62",
+      "size": 3814
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/scripts/validate_flow_action_spec_numbering.py",
+      "sha256": "83c5fd673f3588d683379e1f6046ebea22fb37a020313e799eb3f4b41f65fb9a",
+      "size": 14640
+    },
+    {
+      "path": "toolkit/skills/sdtk-screen-design-spec/SKILL.md",
+      "sha256": "5ecd672a24dbe6fb845102e7a1986b876f4727bb77671233243814dfb2cc103e",
+      "size": 8296
+    },
+    {
+      "path": "toolkit/skills/sdtk-test-case-spec/scripts/validate_test_case_spec.py",
+      "sha256": "cd8e2801cdd7d5f931af4fa29e1a854cddf158629a06201f34ba19d4747dcb2f",
+      "size": 2797
+    },
+    {
+      "path": "toolkit/skills/sdtk-test-case-spec/SKILL.md",
+      "sha256": "0782e52954f7268152f0ff2954b7c71773879cdc429d0cb367330e77d4f92c50",
+      "size": 6330
+    },
+    {
+      "path": "toolkit/skills/skills.catalog.yaml",
+      "sha256": "ef4a40b0095556de4ba608de713cf327e126f9a04ea75b99f3de4588037e82e6",
+      "size": 14330
+    },
+    {
+      "path": "toolkit/templates/docs/api/API_DESIGN_CREATION_RULES.md",
+      "sha256": "b569125ca6f341cbf8e982fd0bbabe2adcf2b4de9773f515544e9bd7c5551b34",
+      "size": 869
+    },
+    {
+      "path": "toolkit/templates/docs/api/API_DESIGN_DETAIL_TEMPLATE.md",
+      "sha256": "e34569c7721929c9ca14b5d2a4390fdb69d7ac766dfdb81b52683710fb2953e8",
+      "size": 1233
+    },
+    {
+      "path": "toolkit/templates/docs/api/API_DESIGN_FLOWCHART_CREATION_RULES.md",
+      "sha256": "3c583826dae1e31f13ef5c439154f3e58dad7cb149d9929134e9c4327fb5235d",
+      "size": 12979
+    },
+    {
+      "path": "toolkit/templates/docs/api/API_ENDPOINTS_TEMPLATE.md",
+      "sha256": "596b303f507f6925c3bd2d9a91c8b7a50027732d557a06de5844d2c2e21b0d41",
+      "size": 4873
+    },
+    {
+      "path": "toolkit/templates/docs/api/feature_api_flow_list_TEMPLATE.txt",
+      "sha256": "58e023d7da4eda2ba15246e8432a84e286b24eb0faaa97ca70475efa2673ec15",
+      "size": 199
+    },
+    {
+      "path": "toolkit/templates/docs/api/FEATURE_API_TEMPLATE.yaml",
+      "sha256": "67fee5c4e5401e9598c9b42c00f8ac1d34e887e976cc852b6226a5e9dc74cc5e",
+      "size": 341
+    },
+    {
+      "path": "toolkit/templates/docs/api/FLOWCHART_CREATION_RULES.md",
+      "sha256": "761c254e237bdb2416b6f6f16d9d2c22e92155a5b7d3cc8b70dac46568a051a0",
+      "size": 671
+    },
+    {
+      "path": "toolkit/templates/docs/api/YAML_CREATION_RULES.md",
+      "sha256": "fa4fa1c0b7d90bf8ed10ec54d5d083d7c50c981f0dba14966c83d9c5c1b92f3f",
+      "size": 5932
+    },
+    {
+      "path": "toolkit/templates/docs/architecture/ARCH_DESIGN_TEMPLATE.md",
+      "sha256": "e673a409c98df02b71eb4e6cd9db2c41df9f4aed30d546499eeb6768f8124af2",
+      "size": 2305
+    },
+    {
+      "path": "toolkit/templates/docs/database/DATABASE_SPEC_TEMPLATE.md",
+      "sha256": "056a35ee70f69a840954d54dea8e33e65dacd6ffb685aa90c125823d19c37d91",
+      "size": 4540
+    },
+    {
+      "path": "toolkit/templates/docs/design/DESIGN_LAYOUT_TEMPLATE.md",
+      "sha256": "d7b932d8631297b1ddcb254d516dd69fd2259ffa5c3ff23741cb3cab8bfe0caa",
+      "size": 1242
+    },
+    {
+      "path": "toolkit/templates/docs/dev/FEATURE_IMPL_PLAN_TEMPLATE.md",
+      "sha256": "bb34ccfe910bc3597396f43ff2db874ed6fafa433db9710bd2d0949cb810d165",
+      "size": 3533
+    },
+    {
+      "path": "toolkit/templates/docs/dev/OPS_HANDOFF_CREATION_RULES.md",
+      "sha256": "de563da0bc41996540b56a63b6295be5f4810c049f132c472a2a7ee816cd2884",
+      "size": 16986
+    },
+    {
+      "path": "toolkit/templates/docs/discovery/REQUIREMENT_TEMPLATE.md",
+      "sha256": "e383c3364bff63a7c3bd0f72a470341238c7da29027df5afd12120c2207d3052",
+      "size": 3449
+    },
+    {
+      "path": "toolkit/templates/docs/product/BACKLOG_TEMPLATE.md",
+      "sha256": "d7e176b06b2b31c4c1eff18392eabc8f9af9cb67b2f8d0c97fc6315572fd81c3",
+      "size": 1035
+    },
+    {
+      "path": "toolkit/templates/docs/product/CONDENSED_UPSTREAM_INPUT_TEMPLATE.md",
+      "sha256": "dcf18f2793218258d76348be38afa1a3616a24d39c43c4ef9e3e7d14cc581338",
+      "size": 11118
+    },
+    {
+      "path": "toolkit/templates/docs/product/PRD_TEMPLATE.md",
+      "sha256": "85bb843e0e8dfcd02a5afe6c120f3e79866a8da6081108ebb73addaf8ee4c35c",
+      "size": 1652
+    },
+    {
+      "path": "toolkit/templates/docs/product/PROJECT_INITIATION_TEMPLATE.md",
+      "sha256": "3c029d3174e22c9ae151e4b340c6a30d6f8dd2e0bda7b1013d04cd744e6d18c7",
+      "size": 2271
+    },
+    {
+      "path": "toolkit/templates/docs/qa/CONTROLLER_ACCEPTANCE_TEMPLATE.md",
+      "sha256": "5cc8232f67978da561e12e51ff3be6a64395f756db1b2d9d09bdaf2c92b0dcbe",
+      "size": 2312
+    },
+    {
+      "path": "toolkit/templates/docs/qa/QA_RELEASE_REPORT_TEMPLATE.md",
+      "sha256": "316d75883ed874e43c68961f74b863d6494d1edd6732d8f90900f813416dbfcd",
+      "size": 4907
+    },
+    {
+      "path": "toolkit/templates/docs/qa/TEST_CASE_CREATION_RULES.md",
+      "sha256": "c0ef7fcc652e591cdd719fbcb05f45e4e2f4337993e6533c056e058e787a7fab",
+      "size": 3636
+    },
+    {
+      "path": "toolkit/templates/docs/qa/TEST_CASE_TEMPLATE.md",
+      "sha256": "74720c1fd6b3a9e09490a1779971801ae33ec3635e62d29e98deb6206120dc2f",
+      "size": 3202
+    },
+    {
+      "path": "toolkit/templates/docs/specs/BA_SPEC_TEMPLATE.md",
+      "sha256": "2decf3977db88e7b27406141097edba5c739d02e123e50d38e3718601c28442f",
+      "size": 3337
+    },
+    {
+      "path": "toolkit/templates/docs/specs/FLOW_ACTION_SPEC_CREATION_RULES.md",
+      "sha256": "2129b214971ba57264c64b41a102f972efcef98bedb4d5615aaed8a215ce1fb4",
+      "size": 11752
+    },
+    {
+      "path": "toolkit/templates/docs/specs/FLOW_ACTION_SPEC_TEMPLATE.md",
+      "sha256": "6c444c076fcec1c528140a73b65751e68a55351ecb376e90ee4d00ba74945f8b",
+      "size": 5763
+    },
+    {
+      "path": "toolkit/templates/handoffs/ARCH_TO_DEV.md",
+      "sha256": "c54d4a178f02e94c00f3b33701eb43315ab2d117af358570d92b93f7b7595730",
+      "size": 1202
+    },
+    {
+      "path": "toolkit/templates/handoffs/BA_TO_ARCH.md",
+      "sha256": "7c44f17b15928691dd125155edc4fc61449cdb7e58f095e08c7039778fc74c97",
+      "size": 891
+    },
+    {
+      "path": "toolkit/templates/handoffs/DEV_STAGE1_SPEC_REVIEW.md",
+      "sha256": "067d39f35ba0fcc460999785ef712e79cf09eb6d120aada7b60b37f11175023e",
+      "size": 1064
+    },
+    {
+      "path": "toolkit/templates/handoffs/DEV_STAGE2_CODE_QUALITY_REVIEW.md",
+      "sha256": "94f22c0d027e06759c5f390034f7f907eb0e9f447b08a32921b92f0a8f2d8ffa",
+      "size": 675
+    },
+    {
+      "path": "toolkit/templates/handoffs/DEV_TO_QA.md",
+      "sha256": "e65192c4e72d86d27452c89f7be2d3bfe1118af550f71e3eee9db92e20f96cea",
+      "size": 1180
+    },
+    {
+      "path": "toolkit/templates/handoffs/DEV_TO_SDTK_CODE.md",
+      "sha256": "6e7b663b8bc2733c3d67ee0db62ca200d030d3886032a4c645730292ac31a664",
+      "size": 3231
+    },
+    {
+      "path": "toolkit/templates/handoffs/PM_TO_BA.md",
+      "sha256": "45441bd7119815037c46d2c16137ee178771d1a7db93d053a1529afbb3836288",
+      "size": 1082
+    },
+    {
+      "path": "toolkit/templates/handoffs/QA_RELEASE_DECISION.md",
+      "sha256": "6ee91d4307ec0fc6dbdee281f2a3f99efa552de55b535ff46cf498689572f9f7",
+      "size": 998
+    },
+    {
+      "path": "toolkit/templates/mailbox/AGENT_REPORT_TEMPLATE.md",
+      "sha256": "54ae1612b6e95af0f19bd0ea897ceb1df72d366dc20485c91ba3261484e88cf2",
+      "size": 1781
+    },
+    {
+      "path": "toolkit/templates/mailbox/AGENT_TASK_TEMPLATE.md",
+      "sha256": "3fd748061615802c8cd5a4978396a782f59404662339ee18f732352cb79b4f84",
+      "size": 2821
+    },
+    {
+      "path": "toolkit/templates/QUALITY_CHECKLIST.md",
+      "sha256": "1cc6c9e0fbbbd545da9750e6f13e09ad968d9b23bff3a69a36a46a2be57d5ea2",
+      "size": 7039
+    },
+    {
+      "path": "toolkit/templates/README.md",
+      "sha256": "2ba15299f149dca87d182ca65d8dccc3b27335c6ac31e01cc42afd02476d5dad",
+      "size": 2976
+    },
+    {
+      "path": "toolkit/templates/SHARED_PLANNING.md",
+      "sha256": "bc778c499c534c3a0c4547c35d2fed02e745cefe743c1ed8a1074e1e0a88a8b2",
+      "size": 3362
+    }
+  ]
+}

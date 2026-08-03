@@ -1,0 +1,4 @@
+# Generated runtime outputs — staged inputs + sleep plan/report + trust events.
+# Canonical inputs live in states/; these are reproduced by `node fixture.js`.
+/docs/
+/.sdtk/

@@ -1,0 +1,514 @@
+name: publish-cli
+
+# Tag-routed publish workflow per BK-237.
+# Each package has its own tag prefix; only the matching job runs.
+#
+# Tag conventions:
+#   v*                  -> sdtk-spec-kit    (preserves legacy convention)
+#   sdtk-design-v*      -> sdtk-design-kit
+#   sdtk-code-v*        -> sdtk-code-kit
+#   sdtk-ops-v*         -> sdtk-ops-kit
+#   sdtk-wiki-v*        -> sdtk-wiki-kit
+#   sdtk-agent-v*       -> sdtk-agent-kit
+#   sdtk-kit-v*         -> sdtk-kit         (meta-package, added in BK-238)
+#
+# All jobs use release-mode gates from BK-236:
+#   scripts/ci/run-release-gates.ps1 -Package <name>
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "sdtk-design-v*"
+      - "sdtk-code-v*"
+      - "sdtk-ops-v*"
+      - "sdtk-wiki-v*"
+      - "sdtk-agent-v*"
+      - "sdtk-kit-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # sdtk-spec-kit
+  # ---------------------------------------------------------------------------
+  publish-spec:
+    if: startsWith(github.ref_name, 'v') && !startsWith(github.ref_name, 'sdtk-')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-spec/distribution/sdtk-spec-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Sync toolkit payload
+        run: powershell -ExecutionPolicy Bypass -File scripts/sync-toolkit-assets.ps1
+
+      - name: Build payload manifest
+        run: powershell -ExecutionPolicy Bypass -File scripts/build-toolkit-manifest.ps1
+
+      - name: Verify payload integrity
+        run: node -e "require('./src/lib/toolkit-payload').verify()"
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-spec-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-spec-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists. Uploading asset with --clobber."
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-spec-kit $GITHUB_REF_NAME" \
+              --notes "Install: \`npm i -g sdtk-spec-kit\`
+
+            Or from tarball:
+            \`\`\`
+            npm i -g https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/$TGZ_FILE
+            \`\`\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # sdtk-design-kit
+  # ---------------------------------------------------------------------------
+  publish-design:
+    if: startsWith(github.ref_name, 'sdtk-design-v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-design/distribution/sdtk-design-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-design-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdtk-design-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-design-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-design-kit $GITHUB_REF_NAME" \
+              --notes "Install: \`npm i -g sdtk-design-kit\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # sdtk-code-kit
+  # ---------------------------------------------------------------------------
+  publish-code:
+    if: startsWith(github.ref_name, 'sdtk-code-v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-code/distribution/sdtk-code-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-code-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdtk-code-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-code-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-code-kit $GITHUB_REF_NAME" \
+              --notes "Install: \`npm i -g sdtk-code-kit\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # sdtk-ops-kit
+  # ---------------------------------------------------------------------------
+  publish-ops:
+    if: startsWith(github.ref_name, 'sdtk-ops-v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-ops/distribution/sdtk-ops-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-ops-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdtk-ops-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-ops-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-ops-kit $GITHUB_REF_NAME" \
+              --notes "Install: \`npm i -g sdtk-ops-kit\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # sdtk-wiki-kit
+  # ---------------------------------------------------------------------------
+  publish-wiki:
+    if: startsWith(github.ref_name, 'sdtk-wiki-v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-wiki/distribution/sdtk-wiki-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-wiki-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdtk-wiki-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-wiki-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-wiki-kit $GITHUB_REF_NAME" \
+              --notes "Install: \`npm i -g sdtk-wiki-kit\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # sdtk-agent-kit
+  # ---------------------------------------------------------------------------
+  publish-agent:
+    if: startsWith(github.ref_name, 'sdtk-agent-v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-agent/distribution/sdtk-agent-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-agent-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdtk-agent-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-agent-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-agent-kit $GITHUB_REF_NAME" \
+              --notes "Install: \`npm i -g sdtk-agent-kit\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # sdtk-kit (meta-package, added in BK-238)
+  # ---------------------------------------------------------------------------
+  publish-kit:
+    if: startsWith(github.ref_name, 'sdtk-kit-v')
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: products/sdtk-kit/distribution/sdtk-kit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Run release gates
+        run: powershell -ExecutionPolicy Bypass -File ..\\..\\..\\..\\scripts\\ci\\run-release-gates.ps1 -Package sdtk-kit
+
+      - name: Verify version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdtk-kit-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: npm pack
+        run: npm pack
+
+      - name: Clean-prefix install smoke
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-kit-*.tgz)
+          node scripts/install-smoke.js --mode local --package "$TGZ_FILE"
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload .tgz to GitHub Release (idempotent)
+        shell: bash
+        run: |
+          TGZ_FILE=$(ls sdtk-kit-*.tgz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$TGZ_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TGZ_FILE" \
+              --title "sdtk-kit $GITHUB_REF_NAME" \
+              --notes "Install (all 5 toolkits): \`npm i -g sdtk-kit\`"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

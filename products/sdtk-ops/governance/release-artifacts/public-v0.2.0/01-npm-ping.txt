@@ -1,0 +1,3 @@
+$ npm ping
+npm notice PING https://registry.npmjs.org/
+npm notice PONG 289ms

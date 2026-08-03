@@ -1,0 +1,11 @@
+{
+  "schema_version": "sdtk.ops-handoff.v1",
+  "feature_key": "CLIENT_EXPORT",
+  "handoff_status": "READY_FOR_SDTK_OPS",
+  "deploy_targets": ["preview"],
+  "rollback": "Revert the export route; no schema migration involved.",
+  "ops_checks": [
+    "health endpoint returns 200",
+    "GET /export smoke test returns CSV attachment"
+  ]
+}

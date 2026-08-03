@@ -1,0 +1,63 @@
+{
+  "name": "sdtk-kit",
+  "version": "1.51.0",
+  "description": "Install the SDTK toolkits in one command. Meta-package for sdtk-spec-kit, sdtk-code-kit, sdtk-ops-kit, and sdtk-wiki-kit.",
+  "type": "commonjs",
+  "bin": {
+    "sdtk": "bin/sdtk.js",
+    "sdtk-spec": "bin/sdtk-spec.js",
+    "sdtk-code": "bin/sdtk-code.js",
+    "sdtk-ops": "bin/sdtk-ops.js",
+    "sdtk-wiki": "bin/sdtk-wiki.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "scripts/",
+    "assets/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "test": "node scripts/unified-init.test.js && node scripts/unified-runtime.test.js && node scripts/evolve.test.js && node scripts/doctor.test.js && node scripts/usage.test.js && node scripts/account.test.js && node scripts/capture-usage.test.js && node scripts/statusline.test.js && node scripts/account-slots.test.js",
+    "install:smoke:local": "node scripts/install-smoke.js --mode local",
+    "install:smoke:published": "node scripts/install-smoke.js --mode published --package sdtk-kit@latest",
+    "pack:smoke": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "sdtk-spec-kit": "^0.9.0",
+    "sdtk-code-kit": "^0.4.0",
+    "sdtk-ops-kit": "^0.2.4",
+    "sdtk-wiki-kit": "^0.17.0"
+  },
+  "engines": {
+    "node": ">=18.13.0"
+  },
+  "keywords": [
+    "sdtk",
+    "sdtk-kit",
+    "sdtk-spec",
+    "sdtk-code",
+    "sdtk-ops",
+    "sdtk-wiki",
+    "cli",
+    "toolkit",
+    "ai-workflow",
+    "solo-founder",
+    "mvp"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codexsdtk/sdtk-toolkit.git",
+    "directory": "products/sdtk-kit/distribution/sdtk-kit"
+  },
+  "homepage": "https://sdtk.dev",
+  "bugs": {
+    "url": "https://github.com/codexsdtk/sdtk-toolkit/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,21 @@
+# Development & build scripts (not needed in published package)
+scripts/
+.github/
+
+# Test artifacts
+tests/
+__tests__/
+*.test.js
+**/__pycache__/
+**/*.pyc
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.eslintrc*
+.prettierrc*

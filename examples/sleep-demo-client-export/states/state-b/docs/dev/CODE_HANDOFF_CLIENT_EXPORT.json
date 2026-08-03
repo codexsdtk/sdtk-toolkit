@@ -1,0 +1,29 @@
+{
+  "schema_version": "sdtk.code-handoff.v1",
+  "feature_key": "CLIENT_EXPORT",
+  "feature_name": "Client Data Export",
+  "handoff_status": "READY_FOR_SDTK_CODE",
+  "recommended_lane": "code",
+  "required_refs": [
+    "docs/specs/BA_SPEC_CLIENT_EXPORT.md",
+    "docs/dev/FEATURE_IMPL_PLAN_CLIENT_EXPORT.md"
+  ],
+  "implementation_slices": [
+    { "id": "S1", "title": "Add CSV serializer for client export rows" },
+    { "id": "S2", "title": "Add GET /export route returning a CSV attachment" },
+    { "id": "S3", "title": "Wire the export button and download handler" }
+  ],
+  "allowed_file_scopes": [
+    "src/export/**",
+    "src/routes/export.js"
+  ],
+  "blocked_file_scopes": [
+    "src/auth/**",
+    "infra/**",
+    "**/*.env"
+  ],
+  "test_obligations": [
+    "unit: CSV serializer",
+    "integration: /export returns 200 + attachment"
+  ]
+}
